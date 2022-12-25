@@ -6,6 +6,11 @@ from turkishinput import prompt_turkish
 
 
 class DictionaryItem(ABC):
+    """
+    An ABC for a dictionary item.
+    Is used in order to practice translation.
+    """
+
     def ask_translation_to_russian(self) -> bool:
         question = f"{self.turkish} -> "
         answer = prompt_russian(question)
