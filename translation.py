@@ -1,7 +1,9 @@
-import random
-from operator import is_
-from typing import Type
+from enum import Enum
+from functools import partial
+from typing import Type, Optional
 from pathlib import Path
+import random
+
 
 from rich import print
 import typer
@@ -11,6 +13,16 @@ from InquirerPy.validator import PathValidator
 
 from dictionaryitem import DictionaryItem
 from turkrutdictionaryitem import TurkrutDictionaryItem
+
+
+class Language(str, Enum):
+    turkish = "turkish"
+    russian = "russian"
+
+
+class AnswerType(str, Enum):
+    typing = "typing"
+    choice = "choice"
 
 
 def prompt_filename():
@@ -32,12 +44,12 @@ def prompt_filetype() -> Type[DictionaryItem]:
     ).execute()
 
 
-def prompt_target_language() -> str:
+def prompt_target_language() -> Language:
     return inquirer.select(
         message="Choose language you want to translate to.",
         choices=[
-            Choice(value="russian", name="Turkish → Russian"),
-            Choice(value="turkish", name="Russian → Turkish")
+            Choice(value=Language.russian, name="Turkish → Russian"),
+            Choice(value=Language.turkish, name="Russian → Turkish")
         ],
     ).execute()
 
@@ -52,14 +64,17 @@ def prompt_shuffle() -> bool:
     ).execute()
 
 
-def prompt_answer_type() -> str:
+def prompt_answer_type() -> AnswerType:
     return inquirer.select(
         message="How would you prefer to answer?",
-        choices=["Type it in", "Choose from multiple options"],
+        choices=[
+            Choice(value=AnswerType.typing, name="Type it in"),
+            Choice(value=AnswerType.choice, name="Choose from multiple options")
+        ],
     ).execute()
 
 
-def answer_with_prompt(word: DictionaryItem, target_language: str):
+def answer_with_prompt(word: DictionaryItem, target_language: Language):
     if target_language == "russian":
         correct_translation = word.russian
         response = word.ask_translation_to_russian()
@@ -82,10 +97,10 @@ def answer_with_prompt(word: DictionaryItem, target_language: str):
 def answer_with_choice(
     the_word: DictionaryItem,
     dictionary: list[DictionaryItem],
-    target_language: str,
+    target_language: Language,
     n_choices: int = 4
 ):
-    source_language = "turkish" if target_language == "russian" else "russian"
+    source_language = Language.turkish if target_language == "russian" else Language.russian
     other_options = random.sample(dictionary, k=n_choices)
     other_options = [
         word for word in other_options if word is not the_word
@@ -109,29 +124,56 @@ def answer_with_choice(
         )
 
 
-def translation() -> None:
+def translation(
+    path: Optional[str] = typer.Option(
+        None, "--path", help="Path to an exercise file."
+    ),
+    shuffle: Optional[bool] = typer.Option(
+        None, "--shuffle", help="Whether to shuffle entries in the exercise or not"
+    ),
+    target_language: Optional[Language] = typer.Option(
+        None,   "--target", help="Practice translation to"
+    ),
+    answer_type: Optional[AnswerType] = typer.Option(
+        None, "--answer", help="Whether to answer by typing it in or by choosing it from multiple options"
+    )
+) -> None:
     """
     Practice translation of words from Turkish to Russian or vice versa.
+    If any option is not specified via CLI, it will be prompted later.
     """
-    dict_item = prompt_filetype()
+    filetype = prompt_filetype()
 
-    filename = prompt_filename()
+    if path is None:
+        path = prompt_filename()
     dictionary = []
-    with open(filename, encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
-            dictionary.append(dict_item(line))
+            dictionary.append(filetype(line))
 
-    shuffle = prompt_shuffle()
+    if shuffle is None:
+        shuffle = prompt_shuffle()
     if shuffle:
         random.shuffle(dictionary)
 
-    target_language = prompt_target_language()
-    answer_type = prompt_answer_type()
+    if target_language is None:
+        target_language = prompt_target_language()
+    if answer_type is None:
+        answer_type = prompt_answer_type()
+
+    match answer_type:
+        case AnswerType.typing:
+            answer_function = partial(
+                answer_with_prompt, target_language=target_language
+            )
+        case AnswerType.choice:
+            answer_function = partial(
+                answer_with_choice,
+                target_language=target_language,
+                dictionary=dictionary
+            )
     for word in dictionary:
-        if answer_type == "Type it in":
-            answer_with_prompt(word, target_language)
-        elif answer_type == "Choose from multiple options":
-            answer_with_choice(word, dictionary, target_language)
+        answer_function(word)
 
 
 if __name__ == "__main__":
