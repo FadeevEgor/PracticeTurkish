@@ -1,5 +1,5 @@
 import random
-from operator import methodcaller, attrgetter
+from operator import is_
 from typing import Type
 from pathlib import Path
 
@@ -52,6 +52,13 @@ def prompt_shuffle() -> bool:
     ).execute()
 
 
+def prompt_answer_type() -> str:
+    return inquirer.select(
+        message="How would you prefer to answer?",
+        choices=["Type it in", "Choose from multiple options"],
+    ).execute()
+
+
 def answer_with_prompt(word: DictionaryItem, target_language: str):
     if target_language == "russian":
         correct_translation = word.russian
@@ -72,6 +79,36 @@ def answer_with_prompt(word: DictionaryItem, target_language: str):
     return is_correct, word
 
 
+def answer_with_choice(
+    the_word: DictionaryItem,
+    dictionary: list[DictionaryItem],
+    target_language: str,
+    n_choices: int = 4
+):
+    source_language = "turkish" if target_language == "russian" else "russian"
+    other_options = random.sample(dictionary, k=n_choices)
+    other_options = [
+        word for word in other_options if word is not the_word
+    ]
+    options = other_options[:n_choices - 1] + [the_word]
+    random.shuffle(options)
+    i = inquirer.select(
+        message=f"Choose correct translation for '{getattr(the_word, source_language)}': ",
+        choices=[
+            Choice(value=i, name=getattr(word, target_language))
+            for i, word in enumerate(options)
+        ]
+    ).execute()
+
+    choice = options[i]
+    if choice is the_word:
+        print("[green]Correct![/green]")
+    else:
+        print(
+            f"[red]Incorrect![/red] Correct option was '[green]{getattr(the_word, target_language)}[/green]'"
+        )
+
+
 def translation() -> None:
     """
     Practice translation of words from Turkish to Russian or vice versa.
@@ -89,8 +126,12 @@ def translation() -> None:
         random.shuffle(dictionary)
 
     target_language = prompt_target_language()
+    answer_type = prompt_answer_type()
     for word in dictionary:
-        answer_with_prompt(word, target_language)
+        if answer_type == "Type it in":
+            answer_with_prompt(word, target_language)
+        elif answer_type == "Choose from multiple options":
+            answer_with_choice(word, dictionary, target_language)
 
 
 if __name__ == "__main__":
