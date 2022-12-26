@@ -11,15 +11,13 @@ class DictionaryItem(ABC):
     Is used in order to practice translation.
     """
 
-    def ask_translation_to_russian(self) -> bool:
+    def ask_translation_to_russian(self) -> str:
         question = f"{self.turkish} -> "
-        answer = prompt_russian(question)
-        return self.check_translation_to_russian(answer)
+        return prompt_russian(question)
 
-    def ask_translation_to_turkish(self) -> bool:
+    def ask_translation_to_turkish(self) -> str:
         question = f"{self.russian} -> "
-        answer = prompt_turkish(question)
-        return self.check_translation_to_turkish(answer)
+        return prompt_turkish(question)
 
     @abstractmethod
     def check_translation_to_russian(self, answer: str) -> bool:

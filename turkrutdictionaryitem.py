@@ -9,7 +9,7 @@ def inside_parenthesis(s: str):
     Useful to extract alternate translation or hint in the format.
     """
     try:
-        return re.search(r"\(.+\)", s).group()
+        return re.search(r"\(.+\)", s).group()[1:-1]
     except AttributeError:
         return ""
 
@@ -30,8 +30,12 @@ class TurkrutDictionaryItem(DictionaryItem):
         self.turkish, self.russian = turkish.strip(), russian.strip()
         self.turkish_hint = inside_parenthesis(self.turkish)
         self.russian_hint = inside_parenthesis(self.russian)
-        self.turkish_word = self.turkish.replace(self.turkish_hint, "")
-        self.russian_words = self.russian.replace(self.russian_hint, "")
+        self.turkish_word = self.turkish.replace(
+            f"({self.turkish_hint})", ""
+        ).strip()
+        self.russian_words = self.russian.replace(
+            f"({self.russian_hint})", ""
+        ).strip()
         self.russian_words = set(self.russian_words.split(", "))
 
     def check_translation_to_russian(self, answer: str) -> bool:
