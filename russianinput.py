@@ -2,15 +2,14 @@ from prompt_toolkit import prompt
 from prompt_toolkit.document import Document
 from prompt_toolkit.validation import Validator, ValidationError
 
-russian_letters = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
-
 
 class RussianValidator(Validator):
     "Validates that all the symbols in an input are from russian alphabet"
 
     def validate(self, document: Document) -> None:
+        valid_letters = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'
         for i, s in enumerate(document.text):
-            if s.lower() not in russian_letters:
+            if s not in valid_letters:
                 raise ValidationError(
                     message="This input contains symbols out of Russian alphabet.",
                     cursor_position=i

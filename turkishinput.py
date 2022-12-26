@@ -1,4 +1,4 @@
-from string import ascii_lowercase
+from string import ascii_letters
 
 from prompt_toolkit import prompt
 from prompt_toolkit.document import Document
@@ -6,15 +6,19 @@ from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.validation import Validator, ValidationError
 
 
-turkish_letters = set(ascii_lowercase + "çğıöşü") - set("qxw")
-
 nonlatin_letters = {
     "c": "ç",
+    "C": "Ç",
     "g": "ğ",
+    "G": "Ğ",
     "i": "ı",
+    "I": "İ",
     "o": "ö",
+    "O": "Ö",
     "s": "ş",
-    "u": "ü"
+    "S": "Ş",
+    "u": "ü",
+    "U": "Ü"
 }
 
 
@@ -35,8 +39,11 @@ class TurkishValidator(Validator):
     "Validates that all the symbols in an input are from Turkish alphabet"
 
     def validate(self, document: Document) -> None:
+        latin_letters = set(ascii_letters) - set("qQxXwW")
+        non_latin_letters = set("çÇğĞıIiİöÖşŞüÜ")
+        valid_symbols = latin_letters | non_latin_letters | {" "}
         for i, s in enumerate(document.text):
-            if s.lower() not in turkish_letters:
+            if s not in valid_symbols:
                 raise ValidationError(
                     message="This input contains symbols out of Turkish alphabet.",
                     cursor_position=i
