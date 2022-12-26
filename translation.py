@@ -2,13 +2,14 @@ import random
 from operator import methodcaller, attrgetter
 from typing import Iterable
 
-import typer
 from rich import print
 from prompt_toolkit import prompt
 from prompt_toolkit.document import Document
 from prompt_toolkit.completion import Completer, Completion, CompleteEvent
 from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.auto_suggest import AutoSuggest, Suggestion
+import typer
+from InquirerPy import inquirer
 
 from turkishinput import prompt_turkish
 from russianinput import prompt_russian
@@ -20,37 +21,12 @@ dictionary_item_types = {
 }
 
 
-def ask_target_language() -> str:
-    options = {
-        "Turkish to Russian": "russian",
-        "Russian to Turkish": "turkish"
-    }
-
-    class LanguageCompleter(Completer):
-        def get_completions(self, document: Document, complete_event: CompleteEvent) -> Iterable[Completion]:
-            for option in options:
-                yield Completion(option, start_position=-1000)
-
-    class LanguageValidator(Validator):
-        def validate(self, document: Document) -> None:
-            if document.text not in options:
-                raise ValidationError(
-                    message="Not a valid option"
-                )
-
-    class LanguageSuggest(AutoSuggest):
-        def get_suggestion(self, buffer: "Buffer", document: Document) -> Suggestion | None:
-            # if Document.tex == "":
-            return Suggestion("Turkish to Russian")
-
-    option = prompt(
-        "Choose a target language: ",
-        # auto_suggest=LanguageSuggest(),
-        completer=LanguageCompleter(),
-        validator=LanguageValidator(),
-        default="Turkish to Russian",
-    )
-    return options[option]
+def prompt_target_language():
+    choice = inquirer.select(
+        message="Choose language you want to translate to.",
+        choices=["Turkish → Russian", "Russian → Turkish"],
+    ).execute()
+    return choice.lower().split(" → ")[-1]
 
 
 def practice_translation(
@@ -66,7 +42,7 @@ def practice_translation(
     if shuffle:
         random.shuffle(dictionary)
 
-    target_language = ask_target_language()
+    target_language = prompt_target_language()
     ask_translation = methodcaller(
         f"ask_translation_to_{target_language}"
     )
