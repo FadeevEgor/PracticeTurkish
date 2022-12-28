@@ -39,11 +39,13 @@ class TurkrutDictionaryItem(DictionaryItem):
         self.russian_words = set(self.russian_words.split(", "))
 
     def check_translation_to_russian(self, answer: str) -> bool:
-        if answer.strip() == "":
+        answer = answer.strip()
+        if answer == "":
             return False
         return answer in self.russian_words | {self.russian_hint}
 
     def check_translation_to_turkish(self, answer: str) -> bool:
-        if answer.strip() == "":
+        answer = answer.strip()
+        if answer == "":
             return False
         return answer in {self.turkish_word, self.turkish_hint}
