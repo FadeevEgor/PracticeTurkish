@@ -4,15 +4,14 @@ from typing import Type, Optional
 from pathlib import Path
 import random
 
-
 from rich import print
 import typer
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
-from InquirerPy.validator import PathValidator
 
 from dictionaryitem import DictionaryItem
 from turkrutdictionaryitem import TurkrutDictionaryItem
+from filepath import prompt_filepath
 
 
 class Language(str, Enum):
@@ -23,16 +22,6 @@ class Language(str, Enum):
 class AnswerType(str, Enum):
     typing = "typing"
     choice = "choice"
-
-
-def prompt_filename():
-    return inquirer.filepath(
-        message="Enter file to practice: ",
-        default=str(Path.cwd()) + "\\",
-        validate=PathValidator(is_file=True),
-        only_files=True,
-        mandatory=True,
-    ).execute()
 
 
 def prompt_filetype() -> Type[DictionaryItem]:
@@ -145,7 +134,9 @@ def translation(
     filetype = prompt_filetype()
 
     if path is None:
-        path = prompt_filename()
+        path = prompt_filepath(
+            message="Choose file to practice: ", is_file=True, extension=".txt"
+        )
     dictionary = []
     with open(path, encoding="utf-8") as f:
         for line in f:
