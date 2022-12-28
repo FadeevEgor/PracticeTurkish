@@ -7,6 +7,7 @@ from prompt_toolkit.validation import Validator, ValidationError
 
 
 nonlatin_letters = {
+    "a": "â",
     "c": "ç",
     "C": "Ç",
     "g": "ğ",
@@ -18,7 +19,7 @@ nonlatin_letters = {
     "s": "ş",
     "S": "Ş",
     "u": "ü",
-    "U": "Ü"
+    "U": "Ü",
 }
 
 
@@ -40,7 +41,7 @@ class TurkishValidator(Validator):
 
     def validate(self, document: Document) -> None:
         latin_letters = set(ascii_letters) - set("qQxXwW")
-        non_latin_letters = set("çÇğĞıIiİöÖşŞüÜ")
+        non_latin_letters = set("âçÇğĞıIiİöÖşŞüÜ")
         valid_symbols = latin_letters | non_latin_letters | {" "}
         for i, s in enumerate(document.text):
             if s not in valid_symbols:
