@@ -9,8 +9,9 @@ import typer
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
-from dictionaryitem import DictionaryItem
+from dictionary import Dictionary, DictionaryItem
 from turkrutdictionaryitem import TurkrutDictionaryItem
+from jsondictionaryitem import JSONDictionaryItem
 from filepath import prompt_filepath
 
 
@@ -29,6 +30,7 @@ def prompt_filetype() -> Type[DictionaryItem]:
         message="What is the format of the file?",
         choices=[
             Choice(value=TurkrutDictionaryItem, name="turkrut.ru"),
+            Choice(value=JSONDictionaryItem, name="JSON")
         ],
     ).execute()
 
@@ -63,7 +65,7 @@ def prompt_answer_type() -> AnswerType:
     ).execute()
 
 
-def answer_with_prompt(word: DictionaryItem, target_language: Language):
+def answer_with_prompt(word: DictionaryItem, target_language: Language) -> bool:
     if target_language == "russian":
         correct_translation = word.russian
         response = word.ask_translation_to_russian()
@@ -85,12 +87,12 @@ def answer_with_prompt(word: DictionaryItem, target_language: Language):
 
 def answer_with_choice(
     the_word: DictionaryItem,
-    dictionary: list[DictionaryItem],
+    dictionary: Dictionary,
     target_language: Language,
     n_choices: int = 4
-):
+) -> tuple[bool, DictionaryItem]:
     source_language = Language.turkish if target_language == "russian" else Language.russian
-    other_options = random.sample(dictionary, k=n_choices)
+    other_options = random.sample(dictionary.words, k=n_choices)
     other_options = [
         word for word in other_options if word is not the_word
     ]
@@ -107,10 +109,11 @@ def answer_with_choice(
     choice = options[i]
     if choice is the_word:
         print("[green]Correct![/green]")
-    else:
-        print(
-            f"[red]Incorrect![/red] Correct option was '[green]{getattr(the_word, target_language)}[/green]'"
-        )
+        return True, the_word
+    print(
+        f"[red]Incorrect![/red] Correct option was '[green]{getattr(the_word, target_language)}[/green]'"
+    )
+    return False, the_word
 
 
 def translation(
@@ -131,21 +134,20 @@ def translation(
     Practice translation of words from Turkish to Russian or vice versa.
     If any option is not specified via CLI, it will be prompted later.
     """
-    filetype = prompt_filetype()
+    dictionary_item_type = prompt_filetype()
 
     if path is None:
         path = prompt_filepath(
-            message="Choose file to practice: ", is_file=True, extension=".txt"
+            message="Choose file to practice: ",
+            is_file=True,
+            extension=dictionary_item_type.extension
         )
-    dictionary = []
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            dictionary.append(filetype(line))
+    dictionary = Dictionary.from_file(path, dictionary_item_type)
 
     if shuffle is None:
         shuffle = prompt_shuffle()
     if shuffle:
-        random.shuffle(dictionary)
+        dictionary.shuffle()
 
     if target_language is None:
         target_language = prompt_target_language()
@@ -163,8 +165,19 @@ def translation(
                 target_language=target_language,
                 dictionary=dictionary
             )
+
+    mistakes = []
     for word in dictionary:
-        answer_function(word)
+        is_correct, word = answer_function(word)
+        if not is_correct:
+            mistakes.append(word)
+
+    Dictionary(mistakes).print(title="Your mistakes")
+    total = len(dictionary)
+    incorrect = len(mistakes)
+    correct = total - incorrect
+    print(f"Correct:   [green]{correct:3}[/green]/{total}")
+    print(f"Incorrect: [red]{incorrect:3}[/red]/{total}")
 
 
 if __name__ == "__main__":

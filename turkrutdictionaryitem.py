@@ -1,9 +1,14 @@
 import re
+from typing import Type, Optional, TypeVar
+from dataclasses import dataclass
 
-from dictionaryitem import DictionaryItem
+from dictionary import DictionaryItem
 
 
-def inside_parenthesis(s: str):
+T = TypeVar("T", bound="TurkrutDictionaryItem")
+
+
+def inside_parenthesis(s: str) -> str:
     """
     Extracts a part of the string s between parenthesis.
     Useful to extract alternate translation or hint in the format.
@@ -14,6 +19,7 @@ def inside_parenthesis(s: str):
         return ""
 
 
+@dataclass
 class TurkrutDictionaryItem(DictionaryItem):
     """
     A dictionary item from turkrut.ru.
@@ -25,18 +31,16 @@ class TurkrutDictionaryItem(DictionaryItem):
     3) Might include include additional info inside parenthesis on both sides.
     """
 
-    def __init__(self, line: str):
-        turkish, russian = re.split("-|—|–", line)
-        self.turkish, self.russian = turkish.strip(), russian.strip()
-        self.turkish_hint = inside_parenthesis(self.turkish)
-        self.russian_hint = inside_parenthesis(self.russian)
-        self.turkish_word = self.turkish.replace(
-            f"({self.turkish_hint})", ""
-        ).strip()
-        self.russian_words = self.russian.replace(
-            f"({self.russian_hint})", ""
-        ).strip()
-        self.russian_words = set(self.russian_words.split(", "))
+    russian: str
+    turkish: str
+    russian_words: set[str]
+    turkish_word: str
+    russian_hint: Optional[str]
+    turkish_hint: Optional[str]
+
+    @property
+    def extension(self) -> str:
+        return ".txt"
 
     def check_translation_to_russian(self, answer: str) -> bool:
         answer = answer.strip()
@@ -49,3 +53,30 @@ class TurkrutDictionaryItem(DictionaryItem):
         if answer == "":
             return False
         return answer in {self.turkish_word, self.turkish_hint}
+
+    @classmethod
+    def from_line(cls: Type[T], line: str) -> T:
+        turkish, russian = re.split("-|—|–", line)
+        turkish, russian = turkish.strip(), russian.strip()
+        turkish_hint = inside_parenthesis(turkish)
+        russian_hint = inside_parenthesis(russian)
+        turkish_word = turkish.replace(
+            f"({turkish_hint})", ""
+        ).strip()
+        russian_words = russian.replace(
+            f"({russian_hint})", ""
+        ).strip()
+        russian_words = set(russian_words.split(", "))
+        return cls(
+            russian,
+            turkish,
+            russian_words,
+            turkish_word,
+            russian_hint,
+            turkish_hint
+        )
+
+    @classmethod
+    def read_dictionary_from_file(cls: Type[T], path: str) -> list[T]:
+        with open(path, encoding="utf-8") as f:
+            return [cls.from_line(line) for line in f]

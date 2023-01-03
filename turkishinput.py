@@ -39,19 +39,29 @@ class TurkishCompleter(Completer):
 class TurkishValidator(Validator):
     "Validates that all the symbols in an input are from Turkish alphabet"
 
+    latin_letters = set(ascii_letters) - set("qQxXwW")
+    non_latin_letters = set("âçÇğĞıIiİöÖşŞüÜ")
+    valid_symbols = latin_letters | non_latin_letters | {" "}
+
+    def __init__(self, allow_comma: bool = False) -> None:
+        super().__init__()
+        if allow_comma:
+            self.valid_symbols |= {","}
+
     def validate(self, document: Document) -> None:
-        latin_letters = set(ascii_letters) - set("qQxXwW")
-        non_latin_letters = set("âçÇğĞıIiİöÖşŞüÜ")
-        valid_symbols = latin_letters | non_latin_letters | {" "}
         for i, s in enumerate(document.text):
-            if s not in valid_symbols:
+            if s not in self.valid_symbols:
                 raise ValidationError(
                     message="This input contains symbols out of Turkish alphabet.",
                     cursor_position=i
                 )
 
 
-def prompt_turkish(message="> ", **kwargs):
+def prompt_turkish(
+    message: str = "> ",
+    allow_coma: bool = False,
+    **kwargs
+) -> str:
     """
     Prompts an input in Turkish from the user. 
     Pressing TAB after letters 'c', 'g', 'i', 'o', 's' and 'u' 
@@ -60,11 +70,11 @@ def prompt_turkish(message="> ", **kwargs):
     return prompt(
         message,
         completer=TurkishCompleter(),
-        validator=TurkishValidator(),
+        validator=TurkishValidator(allow_coma),
         complete_while_typing=False,
         mouse_support=True,
         **kwargs
-    )
+    ).strip()
 
 
 if __name__ == "__main__":

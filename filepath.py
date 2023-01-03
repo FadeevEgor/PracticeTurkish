@@ -51,7 +51,7 @@ def prompt_filepath(
         message=message,
         default=str(Path.cwd()) + os.path.sep,
         completer=ExtensionFilePathCompleter(extension=extension),
-        validate=PathValidator(is_file=is_file)
+        validate=PathValidator(is_file=True) if is_file else None
     ).execute()
 
 

@@ -2,12 +2,12 @@ import random
 from enum import Enum
 from functools import partial
 
-from turkishinput import prompt_turkish
-
 from rich import print
 import typer
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
+
+from turkishinput import prompt_turkish
 
 
 class Difficulty(str, Enum):
