@@ -10,10 +10,9 @@ class RussianValidator(Validator):
     valid_symbols = lower_case + upper_letters + " "
     valid_symbols = set(list(valid_symbols))
 
-    def __init__(self, allow_comma: bool = False) -> None:
+    def __init__(self, additional_symbols: str = "") -> None:
         super().__init__()
-        if allow_comma:
-            self.valid_symbols |= {","}
+        self.valid_symbols |= set(additional_symbols)
 
     def validate(self, document: Document) -> None:
         for i, s in enumerate(document.text):
@@ -26,13 +25,13 @@ class RussianValidator(Validator):
 
 def prompt_russian(
         message: str = "> ",
-        allow_coma: bool = False,
+        additional_symbols: str = "",
         **kwargs
 ):
     "Prompts an input in Russian from the user."
     return prompt(
         message,
-        validator=RussianValidator(allow_coma),
+        validator=RussianValidator(additional_symbols),
         complete_while_typing=False,
         mouse_support=True,
         **kwargs

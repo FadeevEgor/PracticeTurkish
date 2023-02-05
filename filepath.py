@@ -32,10 +32,10 @@ class ExtensionFilePathCompleter(FilePathCompleter):
             super().get_completions(document, complete_event)
         )
         for completion in all_valid_path_completions:
-            text = completion.text
-            if text.startswith("."):
+            filename = completion.text
+            if filename.startswith("."):
                 continue
-            path = Path(text)
+            path = Path(document.current_line, filename)
             if self.extension is not None:
                 if path.is_file() and path.suffix != self.extension:
                     continue
@@ -45,13 +45,18 @@ class ExtensionFilePathCompleter(FilePathCompleter):
 def prompt_filepath(
     message: str,
     is_file: bool = False,
-    extension: Optional[str] = None
+    extension: Optional[str] = None,
+    directory: Optional[str] = None,
 ) -> str:
+    validator = PathValidator(is_file=True) if is_file else None
+    completer = ExtensionFilePathCompleter(extension=extension)
+    directory = Path(directory) if directory is not None else Path.cwd()
+
     return inquirer.text(
         message=message,
-        default=str(Path.cwd()) + os.path.sep,
-        completer=ExtensionFilePathCompleter(extension=extension),
-        validate=PathValidator(is_file=True) if is_file else None
+        default=str(directory.absolute()) + os.path.sep,
+        completer=completer,
+        validate=validator
     ).execute()
 
 

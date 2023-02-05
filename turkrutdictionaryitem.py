@@ -1,22 +1,11 @@
 import re
-from typing import Type, Optional, TypeVar
+from typing import Type, Optional, TypeVar, ClassVar
 from dataclasses import dataclass
 
 from dictionary import DictionaryItem
-
+from parse import inside_parenthesis
 
 T = TypeVar("T", bound="TurkrutDictionaryItem")
-
-
-def inside_parenthesis(s: str) -> str:
-    """
-    Extracts a part of the string s between parenthesis.
-    Useful to extract alternate translation or hint in the format.
-    """
-    try:
-        return re.search(r"\(.+\)", s).group()[1:-1]
-    except AttributeError:
-        return ""
 
 
 @dataclass
@@ -38,9 +27,13 @@ class TurkrutDictionaryItem(DictionaryItem):
     russian_hint: Optional[str]
     turkish_hint: Optional[str]
 
-    @property
-    def extension(self) -> str:
+    @staticmethod
+    def extension() -> str:
         return ".txt"
+
+    @staticmethod
+    def default_directory() -> str:
+        return "turkrut"
 
     def check_translation_to_russian(self, answer: str) -> bool:
         answer = answer.strip()

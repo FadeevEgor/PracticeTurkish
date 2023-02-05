@@ -12,6 +12,7 @@ from InquirerPy.base.control import Choice
 from dictionary import Dictionary, DictionaryItem
 from turkrutdictionaryitem import TurkrutDictionaryItem
 from jsondictionaryitem import JSONDictionaryItem
+from csvdictionaryitem import CSVDictionaryItem
 from filepath import prompt_filepath
 
 
@@ -30,7 +31,8 @@ def prompt_filetype() -> Type[DictionaryItem]:
         message="What is the format of the file?",
         choices=[
             Choice(value=TurkrutDictionaryItem, name="turkrut.ru"),
-            Choice(value=JSONDictionaryItem, name="JSON")
+            Choice(value=CSVDictionaryItem, name="csv"),
+            Choice(value=JSONDictionaryItem, name="JSON"),
         ],
     ).execute()
 
@@ -76,12 +78,15 @@ def answer_with_prompt(word: DictionaryItem, target_language: Language) -> bool:
         is_correct = word.check_translation_to_turkish(response)
     if is_correct:
         print(
-            f"[green]Correct![/green] In the file: [green]{correct_translation}[/green]."
+            f"[green]Correct![/green]",
+            end=" "
         )
     else:
         print(
-            f"[red]Incorrect![/red] In the file: [green]{correct_translation}[/green]."
+            f"[red]Incorrect![/red]",
+            end=" "
         )
+    print(f"In the file: [green]{correct_translation}[/green].")
     return is_correct, word
 
 
@@ -140,7 +145,8 @@ def translation(
         path = prompt_filepath(
             message="Choose file to practice: ",
             is_file=True,
-            extension=dictionary_item_type.extension
+            extension=dictionary_item_type.extension(),
+            directory=dictionary_item_type.default_directory()
         )
     dictionary = Dictionary.from_file(path, dictionary_item_type)
 

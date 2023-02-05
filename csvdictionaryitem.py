@@ -1,14 +1,14 @@
 from typing import Optional, Type, TypeVar
-import json
 from dataclasses import dataclass, asdict
+import csv
 
 from dictionary import DictionaryItem
 
-DI = TypeVar("DI", bound="JSONDictionaryItem")
+DI = TypeVar("DI", bound="CSVDictionaryItem")
 
 
 @dataclass
-class JSONDictionaryItem(DictionaryItem):
+class CSVDictionaryItem(DictionaryItem):
     russian_words: list[str]
     turkish_words: list[str]
     russian_hint: Optional[str] = None
@@ -16,11 +16,11 @@ class JSONDictionaryItem(DictionaryItem):
 
     @staticmethod
     def extension():
-        return ".json"
+        return ".csv"
 
     @staticmethod
     def default_directory() -> str:
-        return "JSON"
+        return "CSV"
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -52,14 +52,28 @@ class JSONDictionaryItem(DictionaryItem):
     @classmethod
     def read_dictionary_from_file(cls: Type[DI], path: str) -> list[DI]:
         with open(path,  encoding="utf-8") as f:
-            return [
-                cls.from_dict(d) for d in json.load(f)
-            ]
+            reader = csv.reader(f, delimiter=";")
+            header = next(reader)
+
+            dictionary: list[DI] = []
+            for tk, ru, tk_hint, ru_hint in reader:
+                tk = tk.split("/")
+                ru = ru.split("/")
+                tk_hint = None if not tk_hint else ""
+                ru_hint = None if not ru_hint else ""
+                dictionary.append(
+                    cls(ru, tk, ru_hint, tk_hint)
+                )
+
+            return dictionary
 
 
 if __name__ == "__main__":
-    with open("test.json", encoding="utf-8") as f:
-        dictionary = json.load(f)
+    import os
+    from dictionary import Dictionary
 
-    dictionary = [JSONDictionaryItem.from_dict(d) for d in dictionary]
-    print(dictionary)
+    path = os.path.join("CSV", "test.csv")
+    dictionary = Dictionary(
+        CSVDictionaryItem.read_dictionary_from_file(path)
+    )
+    dictionary.print()

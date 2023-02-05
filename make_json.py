@@ -52,21 +52,21 @@ def make_dictionary(
         print("""Type in [green]turkish[/green] word or words.
 Use [yellow]", "[/yellow] as separator in the case of several words.
 [red]Empty string[/red] to exit immediately.""")
-        turkish_words = prompt_turkish(allow_coma=True)
+        turkish_words = prompt_turkish(additional_symbols=",-")
         if turkish_words == "":
             break
         print("""Type in [green]russian[/green] word or words.
 Use [yellow]", "[/yellow] as separator in the case of several words.
 [red]Empty string[/red] to exit immediately.""")
-        russian_words = prompt_russian(allow_coma=True)
+        russian_words = prompt_russian(additional_symbols=",-")
         if russian_words == "":
             break
         print("""Type in a hint in [green]turkish[/green].
 Empty string for no-hint.""")
-        turkish_hint = prompt_turkish()
+        turkish_hint = prompt_turkish(additional_symbols=",-")
         print("""Type in a hint in [green]russian[/green].
 Empty string for no-hint.""")
-        russian_hint = prompt_russian()
+        russian_hint = prompt_russian(additional_symbols=",-")
 
         dictionary.append(
             JSONDictionaryItem(

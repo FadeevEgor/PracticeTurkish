@@ -20,16 +20,21 @@ class DictionaryItem(ABC):
     """
 
     def ask_translation_to_russian(self) -> str:
-        question = f"{self.turkish} -> "
-        return prompt_russian(question)
+        question = f"{self.turkish} ⇨ "
+        return prompt_russian(question, additional_symbols=",-")
 
     def ask_translation_to_turkish(self) -> str:
-        question = f"{self.russian} -> "
-        return prompt_turkish(question)
+        question = f"{self.russian} ⇨ "
+        return prompt_turkish(question, additional_symbols=",-")
 
-    @property
+    @staticmethod
     @abstractmethod
-    def extension(self) -> str:
+    def extension() -> str:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def default_directory() -> str:
         pass
 
     @abstractmethod
