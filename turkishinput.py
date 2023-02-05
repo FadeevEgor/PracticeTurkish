@@ -5,6 +5,8 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.validation import Validator, ValidationError
 
+from clipboard import copy_to_clipboard
+
 
 nonlatin_letters = {
     "a": "â",
@@ -43,10 +45,9 @@ class TurkishValidator(Validator):
     non_latin_letters = set("âçÇğĞıIiİöÖşŞüÜ")
     valid_symbols = latin_letters | non_latin_letters | {" "}
 
-    def __init__(self, allow_comma: bool = False) -> None:
+    def __init__(self, additional_symbols: str = "") -> None:
         super().__init__()
-        if allow_comma:
-            self.valid_symbols |= {","}
+        self.valid_symbols |= set(additional_symbols)
 
     def validate(self, document: Document) -> None:
         for i, s in enumerate(document.text):
@@ -59,7 +60,7 @@ class TurkishValidator(Validator):
 
 def prompt_turkish(
     message: str = "> ",
-    allow_coma: bool = False,
+    additional_symbols: str = "",
     **kwargs
 ) -> str:
     """
@@ -70,12 +71,20 @@ def prompt_turkish(
     return prompt(
         message,
         completer=TurkishCompleter(),
-        validator=TurkishValidator(allow_coma),
+        validator=TurkishValidator(additional_symbols),
         complete_while_typing=False,
         mouse_support=True,
         **kwargs
     ).strip()
 
 
+def main() -> None:
+    while True:
+        response = prompt_turkish("Test the Turkish prompt: ")
+        if response == "":
+            return
+        copy_to_clipboard(response)
+
+
 if __name__ == "__main__":
-    prompt_turkish("Test the Turkish prompt: ")
+    main()
