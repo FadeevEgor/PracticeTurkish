@@ -12,6 +12,7 @@ from turkishinput import prompt_turkish
 
 class Difficulty(str, Enum):
     digits = "digits"
+    tens = "tens"
     basic = "basic"
     advanced = "advanced"
 
@@ -111,6 +112,7 @@ def prompt_difficulty() -> Difficulty:
         message="Choose difficulty:",
         choices=[
             Choice(value=Difficulty.digits, name="digits"),
+            Choice(value=Difficulty.tens, name="tens"),
             Choice(value=Difficulty.basic, name="basic"),
             Choice(value=Difficulty.advanced, name="advanced"),
         ],
@@ -128,6 +130,8 @@ def numbers(
     match difficulty:
         case difficulty.digits:
             number_generator = partial(random.choice, list(digits.keys()))
+        case difficulty.tens:
+            number_generator = partial(random.choice, list(tens.keys()))
         case difficulty.basic:
             number_generator = partial(
                 random.choice, list((digits | tens | more).keys())
@@ -141,10 +145,10 @@ def numbers(
         print(
             f"Spell [yellow]{number:10_}[/yellow]. Press [blue]enter[/blue] to escape."
         )
-        user_answer = prompt_turkish().strip()
+        user_answer = prompt_turkish()
         if not user_answer:
             return
-        if user_answer == correct_answer:
+        if user_answer.split() == correct_answer.split():
             print("[green]Correct![/green]")
         else:
             print(
