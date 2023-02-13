@@ -74,7 +74,8 @@ def make_dictionary(
         path = prompt_filepath(
             "Type in destination path: ",
             extension=".csv",
-            is_file=False
+            is_file=False,
+            directory=CSVDictionaryItem.default_directory()
         )
 
     mode = "write"
@@ -100,7 +101,7 @@ def make_dictionary(
         field_names = ["turkish", "russian", "turkish hint", "russian hint"]
         writer = csv.DictWriter(f, delimiter=";", fieldnames=field_names)
         writer.writeheader()
-        for item in dictionary:
+        for item in sorted(dictionary):
             writer.writerow({
                 "turkish": "/".join(item.turkish_words),
                 "russian": "/".join(item.russian_words),

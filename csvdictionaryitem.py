@@ -15,7 +15,7 @@ class CSVDictionaryItem(DictionaryItem):
     turkish_hint: Optional[str] = None
 
     @staticmethod
-    def extension():
+    def extension() -> str:
         return ".csv"
 
     @staticmethod
@@ -66,6 +66,9 @@ class CSVDictionaryItem(DictionaryItem):
                 )
 
             return dictionary
+
+    def __lt__(self, other: DI) -> bool:
+        return self.turkish_words < other.turkish_words
 
 
 if __name__ == "__main__":
