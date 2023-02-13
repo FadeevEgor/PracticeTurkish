@@ -1,0 +1,66 @@
+gıda - еда
+ekmek - хлеб
+tereyağı - сливочное масло
+peynir - сыр
+salam - колбаса
+sosis -сосиска
+bitkisel yağı  - растительное масло
+ayçiçek yağı - подсолнечное масло
+zeytin yağı - оливковое масло
+biber - перец
+tuz - соль
+bal - мёд
+reçel - варенье
+mantar - гриб
+soğan  - лук (репчатый)
+muz - банан
+havuç - морковь
+armut - груша
+pancar - свекла
+meyve  - фрукт
+sebzeler - овощи
+kavun - дыня
+karpuz - арбуз
+pasta - торт
+çikolata - шоколад
+et - мясо
+patates - картофель
+salata - салат
+domates - помидор
+salatalık - огурец
+lahana - капуста
+lapa - каша
+çorba - суп
+sandviç - бутерброд
+soda - газировка
+su - вода
+kahve - кофе (варённый)
+çay - чай
+süt - молоко
+meyve suyu - сок
+elma - яблоко
+üzüm - виноград
+portakal - апельсин
+ananas - ананас
+kayısı - абрикос
+şeftali - персик
+şeker - сахар, конфета
+pirinç - рис
+pilav - варёный рис
+erişte - лапша
+sığır eti - говядина
+domuz - свинина
+tavuk - курица
+pirzola - котлета (отбивная)
+köfte - котлета (рубленная)
+limon  - лимон
+bezelye - горох
+çörek, poğaça - булочка
+balık - рыба
+börek - пирог, пирожок
+dondurma - мороженое
+ceviz - грецкий орех
+yumurta - яйцо
+kahvaltı - завтрак
+öğle yemeği - обед
+akşam yemeği - ужин

@@ -1,0 +1,7 @@
+Pazartesi — понедельник
+Salı — вторник
+Çarşamba — среда
+Perşembe — четверг
+Cuma — пятница
+Cumartesi — суббота
+Pazar — воскресенье

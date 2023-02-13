@@ -1,0 +1,33 @@
+daire - квартира
+mutfak - кухня
+balkon - балкон
+oda - комната
+banyo  - ванная
+duş - душ
+tuvalet - туалет
+lavabo - умывальник, раковина
+yatak odası - спальня
+oturma odası, salon - зал
+kapı - дверь
+pencere - окно
+anahtar - ключ
+yatak - кровать
+battaniye - одеяло
+yorgan - стёганное одеяло
+yastık - подушка
+masa - стол
+sandalye - стул
+koltuk - кресло
+buzdolabı - холодильник
+kanepe - диван
+ayna - зеркало
+ışık - свет
+fincan - чашка
+bardak - стакан
+tabak - тарелка
+kaşık - ложка
+çatal - вилка
+bıçak - нож
+fincan tabağı - блюдце
+şişe - бутылка
+peçete - салфетка
