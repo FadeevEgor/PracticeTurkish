@@ -22,7 +22,7 @@ def prompt_if_file_exists() -> str:
         choices=[
             Choice(
                 value="append",
-                name="Append to the end (only possible if the file is a JSON dictionary)."
+                name="Append to the end (only possible if the file is a CSV dictionary)."
             ),
             Choice(value="exit", name="Abort the program."),
             Choice(value="write",

@@ -1,7 +1,6 @@
 from enum import Enum
 from functools import partial
 from typing import Type, Optional
-from pathlib import Path
 import random
 
 from rich import print
@@ -11,7 +10,6 @@ from InquirerPy.base.control import Choice
 
 from dictionary import Dictionary, DictionaryItem
 from turkrutdictionaryitem import TurkrutDictionaryItem
-from jsondictionaryitem import JSONDictionaryItem
 from csvdictionaryitem import CSVDictionaryItem
 from filepath import prompt_filepath
 
@@ -32,7 +30,6 @@ def prompt_filetype() -> Type[DictionaryItem]:
         choices=[
             Choice(value=TurkrutDictionaryItem, name="turkrut.ru"),
             Choice(value=CSVDictionaryItem, name="csv"),
-            Choice(value=JSONDictionaryItem, name="JSON"),
         ],
     ).execute()
 
