@@ -59,8 +59,8 @@ class CSVDictionaryItem(DictionaryItem):
             for tk, ru, tk_hint, ru_hint in reader:
                 tk = tk.split("/")
                 ru = ru.split("/")
-                tk_hint = None if not tk_hint else ""
-                ru_hint = None if not ru_hint else ""
+                tk_hint = None if not tk_hint else tk_hint
+                ru_hint = None if not ru_hint else ru_hint
                 dictionary.append(
                     cls(ru, tk, ru_hint, tk_hint)
                 )
