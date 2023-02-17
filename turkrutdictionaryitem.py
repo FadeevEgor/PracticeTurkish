@@ -20,12 +20,20 @@ class TurkrutDictionaryItem(DictionaryItem):
     3) Might include include additional info inside parenthesis on both sides.
     """
 
-    russian: str
-    turkish: str
+    _russian: str
+    _turkish: str
     russian_words: set[str]
     turkish_word: str
     russian_hint: Optional[str]
     turkish_hint: Optional[str]
+
+    @property
+    def russian(self):
+        return self._russian
+
+    @property
+    def turkish(self):
+        return self._turkish
 
     @staticmethod
     def extension() -> str:

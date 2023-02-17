@@ -169,18 +169,20 @@ def translation(
                 dictionary=dictionary
             )
 
-    mistakes = []
+    mistakes = Dictionary([])
     for word in dictionary:
         is_correct, word = answer_function(word)
         if not is_correct:
             mistakes.append(word)
 
-    Dictionary(mistakes).print(title="Your mistakes")
+    mistakes.print(title="Your mistakes")
     total = len(dictionary)
     incorrect = len(mistakes)
     correct = total - incorrect
     print(f"Correct:   [green]{correct:3}[/green]/{total}")
     print(f"Incorrect: [red]{incorrect:3}[/red]/{total}")
+    if inquirer.confirm(message="Send your mistakes to telegram").execute():
+        mistakes.sent_to_telegram()
 
 
 if __name__ == "__main__":

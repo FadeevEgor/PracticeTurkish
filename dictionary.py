@@ -3,11 +3,12 @@ from typing import Type, TypeVar, Optional
 from dataclasses import dataclass
 from random import shuffle
 
-from russianinput import prompt_russian
-from turkishinput import prompt_turkish
-
 from rich import print
 from rich.table import Table
+
+from russianinput import prompt_russian
+from turkishinput import prompt_turkish
+from bot import APIConfiguration, send_to_telegram
 
 DI = TypeVar('DI', bound='DictionaryItem')
 D = TypeVar('D', bound='Dictionary')
@@ -26,6 +27,16 @@ class DictionaryItem(ABC):
     def ask_translation_to_turkish(self) -> str:
         question = f"{self.russian} ⇨ "
         return prompt_turkish(question, additional_symbols=",-")
+
+    @property
+    @abstractmethod
+    def russian(self):
+        pass
+
+    @property
+    @abstractmethod
+    def turkish(self):
+        pass
 
     @staticmethod
     @abstractmethod
@@ -60,6 +71,7 @@ class Dictionary:
         return cls(T.read_dictionary_from_file(path))
 
     def print(self, title: Optional[str] = None) -> None:
+        self.sort()
         table = Table(title=title)
         table.add_column("Türkçe", justify="left")
         table.add_column("Русский", justify="right")
@@ -68,6 +80,24 @@ class Dictionary:
             table.add_row(word.turkish, word.russian)
 
         print(table)
+
+    def sent_to_telegram(self) -> bool:
+        self.sort()
+        rows = [f"{item.turkish} — {item.russian}" for item in self]
+        text = "\n".join(rows)
+        config = APIConfiguration.from_config()
+        return send_to_telegram(
+            config.url,
+            config.user_id,
+            config.token,
+            text
+        )
+
+    def sort(self) -> None:
+        self.words.sort(key=lambda item: item.turkish)
+
+    def append(self, word: DictionaryItem) -> None:
+        self.words.append(word)
 
     def shuffle(self) -> None:
         shuffle(self.words)
