@@ -38,8 +38,8 @@ def prompt_target_language() -> Language:
     return inquirer.select(
         message="Choose language you want to translate to.",
         choices=[
+            Choice(value=Language.turkish, name="Russian → Turkish"),
             Choice(value=Language.russian, name="Turkish → Russian"),
-            Choice(value=Language.turkish, name="Russian → Turkish")
         ],
     ).execute()
 
@@ -181,7 +181,7 @@ def translation(
     correct = total - incorrect
     print(f"Correct:   [green]{correct:3}[/green]/{total}")
     print(f"Incorrect: [red]{incorrect:3}[/red]/{total}")
-    if inquirer.confirm(message="Send your mistakes to telegram").execute():
+    if inquirer.confirm(message="Send your mistakes to telegram", default=True).execute():
         mistakes.sent_to_telegram()
 
 
