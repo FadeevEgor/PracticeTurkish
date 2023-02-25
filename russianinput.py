@@ -7,8 +7,7 @@ class RussianValidator(Validator):
     "Validates that all the symbols in an input are from russian alphabet"
     lower_case = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
     upper_letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'
-    valid_symbols = lower_case + upper_letters + " "
-    valid_symbols = set(list(valid_symbols))
+    valid_symbols = set(list(lower_case + upper_letters + " "))
 
     def __init__(self, additional_symbols: str = "") -> None:
         super().__init__()
