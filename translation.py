@@ -8,15 +8,11 @@ import typer
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
+from languages import prompt_way_of_translation
 from dictionary import Dictionary, DictionaryItem
 from turkrutdictionaryitem import TurkrutDictionaryItem
 from csvdictionaryitem import CSVDictionaryItem
 from filepath import prompt_filepath
-
-
-class Language(str, Enum):
-    turkish = "turkish"
-    russian = "russian"
 
 
 class AnswerType(str, Enum):
@@ -30,16 +26,6 @@ def prompt_filetype() -> Type[DictionaryItem]:
         choices=[
             Choice(value=TurkrutDictionaryItem, name="turkrut.ru"),
             Choice(value=CSVDictionaryItem, name="csv"),
-        ],
-    ).execute()
-
-
-def prompt_target_language() -> Language:
-    return inquirer.select(
-        message="Choose language you want to translate to.",
-        choices=[
-            Choice(value=Language.turkish, name="Russian → Turkish"),
-            Choice(value=Language.russian, name="Turkish → Russian"),
         ],
     ).execute()
 
@@ -64,15 +50,10 @@ def prompt_answer_type() -> AnswerType:
     ).execute()
 
 
-def answer_with_prompt(word: DictionaryItem, target_language: Language) -> bool:
-    if target_language == "russian":
-        correct_translation = word.russian
-        response = word.ask_translation_to_russian()
-        is_correct = word.check_translation_to_russian(response)
-    else:
-        correct_translation = word.turkish
-        response = word.ask_translation_to_turkish()
-        is_correct = word.check_translation_to_turkish(response)
+def answer_with_prompt(word: DictionaryItem, a2b: bool) -> bool:
+    answer = word.ask_translation(a2b)
+    is_correct = word.check_translation(a2b, answer)
+    correct_translation = word.query_b if a2b else word.query_a
     if is_correct:
         print(
             f"[green]Correct![/green]",
@@ -83,37 +64,39 @@ def answer_with_prompt(word: DictionaryItem, target_language: Language) -> bool:
             f"[red]Incorrect![/red]",
             end=" "
         )
-    print(f"In the file: [green]{correct_translation}[/green].")
+    print(f'In the file: "[green]{correct_translation}[/green]"')
     return is_correct, word
 
 
 def answer_with_choice(
     the_word: DictionaryItem,
     dictionary: Dictionary,
-    target_language: Language,
+    a2b: bool,
     n_choices: int = 4
 ) -> tuple[bool, DictionaryItem]:
-    source_language = Language.turkish if target_language == "russian" else Language.russian
+    query = the_word.query_a if a2b else the_word.query_b
     other_options = random.sample(dictionary.words, k=n_choices)
     other_options = [
         word for word in other_options if word is not the_word
     ]
     options = other_options[:n_choices - 1] + [the_word]
     random.shuffle(options)
-    i = inquirer.select(
-        message=f"Choose correct translation for '{getattr(the_word, source_language)}': ",
-        choices=[
-            Choice(value=i, name=getattr(word, target_language))
-            for i, word in enumerate(options)
-        ]
-    ).execute()
+    choices = [
+        Choice(
+            value=i,
+            name=word.query_b if a2b else word.query_a
+        ) for i, word in enumerate(options)
+    ]
+
+    i = inquirer.select(message=f"{query} ⇨ ", choices=choices).execute()
 
     choice = options[i]
     if choice is the_word:
         print("[green]Correct![/green]")
         return True, the_word
+    correct_answer = the_word.query_b if a2b else the_word.query_a
     print(
-        f"[red]Incorrect![/red] Correct option was '[green]{getattr(the_word, target_language)}[/green]'"
+        f"[red]Incorrect![/red] Correct option was '[green]{correct_answer}[/green]'"
     )
     return False, the_word
 
@@ -124,9 +107,6 @@ def translation(
     ),
     shuffle: Optional[bool] = typer.Option(
         None, "--shuffle", help="Whether to shuffle entries in the exercise or not"
-    ),
-    target_language: Optional[Language] = typer.Option(
-        None,   "--target", help="Practice translation to"
     ),
     answer_type: Optional[AnswerType] = typer.Option(
         None, "--answer", help="Whether to answer by typing it in or by choosing it from multiple options"
@@ -152,24 +132,25 @@ def translation(
     if shuffle:
         dictionary.shuffle()
 
-    if target_language is None:
-        target_language = prompt_target_language()
+    a2b = prompt_way_of_translation(
+        dictionary.language_a, dictionary.language_b
+    )
     if answer_type is None:
         answer_type = prompt_answer_type()
 
     match answer_type:
         case AnswerType.typing:
             answer_function = partial(
-                answer_with_prompt, target_language=target_language
+                answer_with_prompt, a2b=a2b
             )
         case AnswerType.choice:
             answer_function = partial(
                 answer_with_choice,
-                target_language=target_language,
+                a2b=a2b,
                 dictionary=dictionary
             )
 
-    mistakes = Dictionary([])
+    mistakes = Dictionary([], dictionary.language_a, dictionary.language_b)
     for word in dictionary:
         is_correct, word = answer_function(word)
         if not is_correct:
@@ -182,7 +163,7 @@ def translation(
     print(f"Correct:   [green]{correct:3}[/green]/{total}")
     print(f"Incorrect: [red]{incorrect:3}[/red]/{total}")
     if inquirer.confirm(message="Send your mistakes to telegram", default=True).execute():
-        mistakes.sent_to_telegram()
+        mistakes.send_to_telegram()
 
 
 if __name__ == "__main__":

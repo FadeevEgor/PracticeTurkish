@@ -1,13 +1,13 @@
+from string import ascii_letters
+
 from prompt_toolkit import prompt
 from prompt_toolkit.document import Document
 from prompt_toolkit.validation import Validator, ValidationError
 
 
-class RussianValidator(Validator):
-    "Validates that all the symbols in an input are from russian alphabet"
-    lower_case = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
-    upper_letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'
-    valid_symbols = set(list(lower_case + upper_letters + " "))
+class EnglishValidator(Validator):
+    "Validates that all the symbols in an input are from english alphabet"
+    valid_symbols = set(list(ascii_letters + " "))
 
     def __init__(self, additional_symbols: str = "") -> None:
         super().__init__()
@@ -17,20 +17,20 @@ class RussianValidator(Validator):
         for i, s in enumerate(document.text):
             if s not in self.valid_symbols:
                 raise ValidationError(
-                    message="This input contains symbols out of Russian alphabet.",
+                    message="This input contains symbols out of english alphabet.",
                     cursor_position=i
                 )
 
 
-def prompt_russian(
+def prompt_english(
         message: str = "> ",
         additional_symbols: str = "",
         **kwargs
 ) -> str:
-    "Prompts an input in Russian from the user."
+    "Prompts an input in English from the user."
     return prompt(
         message,
-        validator=RussianValidator(additional_symbols),
+        validator=EnglishValidator(additional_symbols),
         complete_while_typing=False,
         mouse_support=True,
         **kwargs
@@ -38,4 +38,4 @@ def prompt_russian(
 
 
 if __name__ == "__main__":
-    prompt_russian("Test the russian prompt: ")
+    prompt_english("Test the english prompt: ")

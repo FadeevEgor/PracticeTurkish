@@ -6,12 +6,15 @@ from random import shuffle
 from rich import print
 from rich.table import Table
 
-from russianinput import prompt_russian
-from turkishinput import prompt_turkish
+from languages import Language, PrompterInTheLanguage
 from bot import APIConfiguration, send_to_telegram
 
 DI = TypeVar('DI', bound='DictionaryItem')
 D = TypeVar('D', bound='Dictionary')
+
+
+class DictionaryFormatError(ValueError):
+    pass
 
 
 class DictionaryItem(ABC):
@@ -20,22 +23,53 @@ class DictionaryItem(ABC):
     Is used in order to practice translation.
     """
 
-    def ask_translation_to_russian(self) -> str:
-        question = f"{self.turkish} ⇨ "
-        return prompt_russian(question, additional_symbols=",-")
+    def ask_translation(self, a2b: bool) -> str:
+        query = self.query_a if a2b else self.query_b
+        prompter = PrompterInTheLanguage(
+            self.language_b if a2b else self.language_a
+        )
+        return prompter(f"{query} ⇨ ", additional_symbols=",-")
 
-    def ask_translation_to_turkish(self) -> str:
-        question = f"{self.russian} ⇨ "
-        return prompt_turkish(question, additional_symbols=",-")
+    def check_translation(self, a2b: bool, answer: str) -> bool:
+        answer = answer.strip()
+        if answer == "":
+            return False
+
+        target = self.words_b if a2b else self.words_a
+        return answer in target
+
+    @property
+    def languages(self) -> tuple[Language, Language]:
+        return (self.language_a, self.language_b)
 
     @property
     @abstractmethod
-    def russian(self):
+    def language_a(self) -> Language:
         pass
 
     @property
     @abstractmethod
-    def turkish(self):
+    def language_b(self) -> Language:
+        pass
+
+    @property
+    @abstractmethod
+    def query_a(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def query_b(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def words_a(self) -> set[str]:
+        pass
+
+    @property
+    @abstractmethod
+    def words_b(self) -> set[str]:
         pass
 
     @staticmethod
@@ -48,42 +82,38 @@ class DictionaryItem(ABC):
     def default_directory() -> str:
         pass
 
-    @abstractmethod
-    def check_translation_to_russian(self, answer: str) -> bool:
-        pass
-
-    @abstractmethod
-    def check_translation_to_turkish(self, answer: str) -> bool:
-        pass
-
     @classmethod
     @abstractmethod
-    def read_dictionary_from_file(cls: Type[DI], path: str) -> list[DI]:
+    def read_dictionary_from_file(cls: Type[DI], path: str) -> tuple[list[DI], Language, Language]:
         pass
 
 
 @dataclass
 class Dictionary:
     words: list[DictionaryItem]
+    language_a: Language
+    language_b: Language
 
     @classmethod
     def from_file(cls: D, path: str, T: Type[DictionaryItem]) -> D:
-        return cls(T.read_dictionary_from_file(path))
+        return cls(*T.read_dictionary_from_file(path))
 
     def print(self, title: Optional[str] = None) -> None:
         self.sort()
         table = Table(title=title)
-        table.add_column("Türkçe", justify="left")
-        table.add_column("Русский", justify="right")
+        table.add_column(self.language_a, justify="left")
+        table.add_column(self.language_b, justify="right")
 
         for word in self.words:
-            table.add_row(word.turkish, word.russian)
+            table.add_row(word.query_a, word.query_b)
 
         print(table)
 
-    def sent_to_telegram(self) -> bool:
+    def send_to_telegram(self) -> bool:
         self.sort()
-        rows = [f"{item.turkish} — {item.russian}" for item in self]
+        rows = [
+            f"{item.query_a} — {item.query_b}" for item in self
+        ]
         text = "\n".join(rows)
         config = APIConfiguration.from_config()
         return send_to_telegram(
@@ -94,7 +124,7 @@ class Dictionary:
         )
 
     def sort(self) -> None:
-        self.words.sort(key=lambda item: item.turkish)
+        self.words.sort(key=lambda item: item.query_a)
 
     def append(self, word: DictionaryItem) -> None:
         self.words.append(word)

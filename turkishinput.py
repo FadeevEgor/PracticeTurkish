@@ -80,10 +80,10 @@ def prompt_turkish(
 
 def main() -> None:
     while True:
-        response = prompt_turkish("Test the Turkish prompt: ")
-        if response == "":
+        input_ = prompt_turkish("Test the Turkish prompt: ")
+        if input_ == "":
             return
-        copy_to_clipboard(response)
+        copy_to_clipboard(input_)
 
 
 if __name__ == "__main__":
