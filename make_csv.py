@@ -104,13 +104,15 @@ def make_dictionary(
 
     match mode:
         case WritingMode.create | WritingMode.overwrite:
-            la = prompt_language("Choose first language")
-            lb = prompt_language("Choose second language")
+            la = prompt_language("Choose first language.")
+            lb = prompt_language("Choose second language.")
             dictionary = Dictionary([], la, lb)
         case WritingMode.append:
             dictionary = Dictionary.from_file(path, CSVDictionaryItem)
             la, lb = dictionary.language_a, dictionary.language_b
-            print(f"Detected languages are {la} and {lb}")
+            print(
+                f"Detected languages are [green]{la}[/green] and [green]{lb}[/green].\n"
+            )
 
     while True:
         item = prompt_dictionary_item(la, lb)
