@@ -11,7 +11,7 @@ T = TypeVar("T", bound="TurkrutDictionaryItem")
 
 def extract_words_and_hint(s: str) -> tuple[set[str], str]:
     hint = inside_parenthesis(s)
-    words = s.replace(f"{hint}", "").strip()
+    words = s.replace(f"({hint})", "").strip()
     words = set(words.split(", "))
     return words, hint
 
