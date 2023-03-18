@@ -7,7 +7,7 @@ from rich import print
 from rich.table import Table
 
 from languages import Language, PrompterInTheLanguage
-from bot import APIConfiguration, send_to_telegram
+from bot import APIConfiguration, send_to_telegram, TelegramError
 
 DI = TypeVar('DI', bound='DictionaryItem')
 D = TypeVar('D', bound='Dictionary')
@@ -115,13 +115,20 @@ class Dictionary:
             f"{item.query_a} — {item.query_b}" for item in self
         ]
         text = "\n".join(rows)
-        config = APIConfiguration.from_config()
-        return send_to_telegram(
-            config.url,
-            config.user_id,
-            config.token,
-            text
-        )
+        try:
+            config = APIConfiguration.from_config()
+            status = send_to_telegram(
+                config.url,
+                config.user_id,
+                config.token,
+                text
+            )
+        except TelegramError as exception:
+            exception_type = type(exception).__name__
+            print(f"[red]{exception_type}[/red]: [yellow]{exception}[/yellow]")
+            return False
+        else:
+            return status
 
     def sort(self) -> None:
         self.words.sort(key=lambda item: item.query_a)

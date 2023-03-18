@@ -4,11 +4,15 @@ from dataclasses import dataclass
 import requests
 
 
-class ConfigurationError(Exception):
+class TelegramError(Exception):
     pass
 
 
-class WrongToken(Exception):
+class ConfigurationError(TelegramError):
+    pass
+
+
+class AuthenticationError(TelegramError):
     pass
 
 
@@ -30,7 +34,7 @@ class APIConfiguration:
             API_section = config["BOT API"]
         except KeyError:
             raise ConfigurationError(
-                f"Your configuration file '{path}' is incorrect: missing 'BOT API' section."
+                f"Configuration file '{path}' is incorrect: missing 'BOT API' section."
             )
 
         URL = _get_and_check_str(API_section, "URL", path)
@@ -55,8 +59,8 @@ def send_to_telegram(
         }
     )
     if response.status_code == 403:
-        raise WrongToken(
-            "User token is wrong. Please, ask telegram bot for correct one!"
+        raise AuthenticationError(
+            "User token is rejected!\nPlease, check 'USER ID' and 'TOKEN' fields in your configuration file."
         )
     if response.status_code != 200:
         raise requests.HTTPError(response.text)
@@ -68,11 +72,11 @@ def _get_and_check_int(section: SectionProxy, field: str, path: str) -> int:
         value = section.getint(field)
     except ValueError:
         raise ConfigurationError(
-            f"Your configuration file '{path}' is incorrect: '{field}' expected to be an integer."
+            f"Configuration file '{path}' is incorrect: '{field}' expected to be an integer."
         )
     if value is None:
         raise ConfigurationError(
-            f"Your configuration file '{path}' is incorrect: missing '{field}' field."
+            f"Configuration file '{path}' is incorrect: missing '{field}' field."
         )
     return value
 
@@ -82,6 +86,6 @@ def _get_and_check_str(section: SectionProxy, field: str, path: str) -> str:
         value = section[field]
     except KeyError:
         raise ConfigurationError(
-            f"Your configuration file {path} is incorrect: missing '{field}' field."
+            f"Configuration file {path} is incorrect: missing '{field}' field."
         )
     return value

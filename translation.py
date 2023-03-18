@@ -8,8 +8,8 @@ import typer
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
-from languages import prompt_way_of_translation
 from dictionary import Dictionary, DictionaryItem
+from languages import prompt_way_of_translation
 from turkrutdictionaryitem import TurkrutDictionaryItem
 from csvdictionaryitem import CSVDictionaryItem
 from filepath import prompt_filepath
