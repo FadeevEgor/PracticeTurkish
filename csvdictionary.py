@@ -3,12 +3,13 @@ from dataclasses import dataclass, asdict
 import csv
 
 from languages import Language
-from dictionary import DictionaryItem, DictionaryFormatError
+from dictionary import DictionaryEntry, DictionaryFormatError
 
-DI = TypeVar("DI", bound="CSVDictionaryItem")
+DI = TypeVar("DI", bound="CSVDictionaryEntry")
 
 
 def generate_query(words: list[str], hint: Optional[str]) -> str:
+    "Generate query with words separated by '/' and a possible hint."
     query = "/".join(words)
     if hint is not None:
         query += f" ({hint})"
@@ -16,6 +17,20 @@ def generate_query(words: list[str], hint: Optional[str]) -> str:
 
 
 def parse_language(language: str) -> Language:
+    """Parse language from a string and create an instance of Language enum.
+
+    Parameters
+    ----------
+    language : str
+        A string representing a language. Should be equal to one of the values
+        of Language enum.
+
+    Raises
+    ----------
+    DictionaryFormatError
+        If the string isn't a value of Language enum.
+
+    """
     normalized = language.strip().lower()
     try:
         return Language[normalized]
@@ -24,6 +39,28 @@ def parse_language(language: str) -> Language:
 
 
 def parse_header(header: list[str]) -> tuple[Language, Language]:
+    """Parse languages of the dictionary based on the header of the CSV file.
+
+    Parses languages of the dictionary based on the names of the first two 
+    columns in the dictionary and returns them in a tuple.
+
+    Parameters
+    ----------
+    header : list[str]
+        A list of column names in a CSV file. Should contain exactly 4 strings.
+
+    Returns
+    ----------
+    language_a : Language 
+        Language of the 1st column.
+    language_b : Language 
+        Language of the 2nd column.
+
+    Raises
+    ----------
+    DictionaryFormatError
+        If the number of columns is incorrect or languages can't be parsed.
+    """
     if len(header) != 4:
         raise DictionaryFormatError(
             "Incorrect number of columns in the CSV file."
@@ -33,7 +70,25 @@ def parse_header(header: list[str]) -> tuple[Language, Language]:
 
 
 @dataclass
-class CSVDictionaryItem(DictionaryItem):
+class CSVDictionaryEntry(DictionaryEntry):
+    """A class used to represent entries of custom dictionary form.
+
+    This form uses a CSV file format with 4 columns to store dictionaries.
+    A semicolon (";") is used as the separator of the columns. 
+
+    First two columns are mandatory for each entry. They represent correct 
+    translations from one language to another. Multiple alternative 
+    translations may be present, in which case they are separated 
+    by slash ("/") within one cell. Each of the values will be considered
+    as a correct translation.
+
+    Other two optional columns may contain possible hints or clarifications
+    en each language. They will be shown to the user within a query for 
+    translation inside parenthesis, but won't be considered as a correct
+    translation.
+
+    For meaning of the properties and methods, see its parent ABC. 
+    """
     _words_a: list[str]
     _words_b: list[str]
     _language_a: Language
@@ -116,6 +171,6 @@ if __name__ == "__main__":
 
     path = os.path.join("CSV", "test.csv")
     dictionary = Dictionary(
-        CSVDictionaryItem.read_dictionary_from_file(path)
+        CSVDictionaryEntry.read_dictionary_from_file(path)
     )
     dictionary.print()

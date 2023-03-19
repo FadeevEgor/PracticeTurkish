@@ -1,6 +1,7 @@
 import random
 from enum import Enum
 from functools import partial
+from typing import Optional
 
 from rich import print
 import typer
@@ -58,6 +59,26 @@ more = {
 
 
 def spell_small_number(number: int, dismiss_one: bool = False) -> str:
+    """Spell a positive integer number lesser than 1000 in turkish.
+
+    Parameters
+    ----------
+    number : int
+        A positive integer number to spell. 0 <= number <= 999.
+    dismiss_one : bool
+        Whether to put 'bir' in front or note. Necessary, since 
+        `bin` used instead of `bir bin`.
+
+    Returns
+    ----------
+    spelling : str
+        A line of text with spelling of the number in turkish. 
+    """
+    if number not in range(1000):
+        raise ValueError(
+            "The number isn't a positive integer number lesser than 999."
+        )
+
     if dismiss_one and number == 1:
         return ""
 
@@ -76,8 +97,20 @@ def spell_small_number(number: int, dismiss_one: bool = False) -> str:
     return f"{hundred} {ten} {one}".strip()
 
 
-def spell(number: int) -> str:
-    if number > 999_999_999_999:
+def spell_number(number: int) -> str:
+    """Spell a positive integer number lesser than 10^12 in turkish.
+
+    Parameters
+    ----------
+    number : int
+        A positive integer number to spell. 0 <= number <= 10^12.
+
+    Returns
+    ----------
+    spelling : str
+        A line of text with spelling of the number in turkish. 
+    """
+    if number not in range(10 ** 12):
         raise ValueError("Too big number")
 
     if number == 0:
@@ -108,6 +141,13 @@ def spell(number: int) -> str:
 
 
 def prompt_difficulty() -> Difficulty:
+    """Prompt the difficulty from the user.
+
+    Returns
+    ----------
+    difficulty : Difficulty
+        A value from `Difficulty` enum. 
+    """
     return inquirer.select(
         message="Choose difficulty:",
         choices=[
@@ -120,10 +160,17 @@ def prompt_difficulty() -> Difficulty:
 
 
 def numbers(
-        difficulty: Difficulty = typer.Option(
+        difficulty: Optional[Difficulty] = typer.Option(
             None, "--difficulty", help="Difficulty"
         )
-):
+) -> None:
+    """Practice session for numbers.
+
+    Parameters
+    ----------
+    difficulty : Optional[Difficulty]
+        A value from `Difficulty` enum. Prompted from user if None. 
+    """
     if difficulty is None:
         difficulty = prompt_difficulty()
 
@@ -137,11 +184,11 @@ def numbers(
                 random.choice, list((digits | tens | more).keys())
             )
         case difficulty.advanced:
-            number_generator = partial(random.randrange, 1_000_000_000_000)
+            number_generator = partial(random.randrange, 10 ** 12)
 
     while True:
         number = number_generator()
-        correct_answer = spell(number)
+        correct_answer = spell_number(number)
         print(
             f"Spell [yellow]{number:10_}[/yellow]. Press [blue]enter[/blue] to escape."
         )

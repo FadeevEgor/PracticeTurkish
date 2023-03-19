@@ -3,10 +3,10 @@ from typing import Type, Optional, TypeVar
 from dataclasses import dataclass
 
 from languages import Language
-from dictionary import DictionaryItem, Dictionary
+from dictionary import DictionaryEntry, Dictionary
 from parse import inside_parenthesis
 
-T = TypeVar("T", bound="TurkrutDictionaryItem")
+T = TypeVar("T", bound="TurkrutDictionaryEntry")
 
 
 def extract_words_and_hint(s: str) -> tuple[set[str], str]:
@@ -17,15 +17,15 @@ def extract_words_and_hint(s: str) -> tuple[set[str], str]:
 
 
 @dataclass
-class TurkrutDictionaryItem(DictionaryItem):
-    """
-    A dictionary item from turkrut.ru.
+class TurkrutDictionaryEntry(DictionaryEntry):
+    """A class used to represent a dictionary entry from turkrut.ru.
+
     The structure: 
-    Turkish - Russian\n
+    Turkish (hint) - Russian (hint)\n
     Caveats:
     1) The separator could be a dash of various length.
     2) Might include multiple options for russian translation.
-    3) Might include additional info inside parenthesis on both sides.
+    3) Might include additional info inside parenthesis for both languages.
     """
 
     _turkish: str

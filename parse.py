@@ -1,13 +1,27 @@
 import re
 
 
+inside_parenthesis_pattern = re.compile(r"\(.+\)")
+
+
 def inside_parenthesis(s: str) -> str:
-    """
-    Extracts a part of the string s between parenthesis.
-    Useful to extract alternate translation or hint in the format.
+    """Extract a part of the string s between parenthesis.
+
+    Used to extract hint, clarifications or alternate translations within 
+    dictionary entry.
+
+    Parameters
+    ----------
+    s : str
+        Text to be searched in.
+
+    Returns
+    ----------
+    t : str
+        Text inside parenthesis.
     """
     try:
-        group = re.search(r"\(.+\)", s).group()
+        group = inside_parenthesis.search(r"\(.+\)", s).group()
     except AttributeError:
         return ""
     else:

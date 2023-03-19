@@ -10,8 +10,21 @@ from InquirerPy.validator import PathValidator
 
 
 class ExtensionFilePathCompleter(FilePathCompleter):
-    """
-    Modifies behaviour of FilePathCompleter to filter completions by extension
+    """A class used to generate completions for path of a file with an extension. 
+
+    Extends `FilePathCompleter` provided by `InquirerPy` library. Overloads the
+    `get_completions` method to generate completions only for files with 
+    specified extension, given the extension is provided. 
+
+    Attributes
+    ----------
+    only_directories : bool
+        True, if completions should contain only directories, False by default
+    only_files : bool
+        True, if completions should contain only directories, False by default.
+    extension : Optional[str]
+        If given, all files with extensions differing from specified will be 
+        filtered from completions. By default (None) no filtering is performed.
     """
 
     def __init__(
@@ -28,6 +41,7 @@ class ExtensionFilePathCompleter(FilePathCompleter):
         document: Document,
         complete_event: CompleteEvent
     ) -> Generator[Completion, None, None]:
+        "Generator yielding possible path completions."
         all_valid_path_completions = list(
             super().get_completions(document, complete_event)
         )
@@ -48,6 +62,25 @@ def prompt_filepath(
     extension: Optional[str] = None,
     directory: Optional[str] = None,
 ) -> str:
+    """Prompt a file path from the user.
+
+    Parameters
+    ----------
+    message : str
+        A text to be printed before the prompt.
+    is_file : bool
+        True, if the path should lead to an existing file.
+    extension : Optional[str]
+        The extension of the filepath to be prompted.
+    directory : Optional[str]
+        A string representing a path to a directory, inside of which the path 
+        should lead to. 
+
+    Returns
+    ----------
+    path : str
+        A string representing a path to a file.
+    """
     validator = PathValidator(is_file=True) if is_file else None
     completer = ExtensionFilePathCompleter(extension=extension)
     directory = Path(directory) if directory is not None else Path.cwd()
