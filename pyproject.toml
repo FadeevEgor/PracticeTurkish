@@ -8,6 +8,11 @@ packages = [{include = "practice_turkish"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+typer = "^0.7.0"
+rich = "^13.3.2"
+requests = "^2.28.2"
+inquirerpy = "^0.3.4"
+prompt-toolkit = "^3.0.38"
 
 
 [build-system]
