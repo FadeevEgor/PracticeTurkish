@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "practice_turkish"
+version = "0.1.0"
+description = "A set of tools to practice your Turkish"
+authors = ["Egor Fadeev <fadeevegor@yandex.ru>"]
+readme = "README.md"
+packages = [{include = "practice_turkish"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
