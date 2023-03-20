@@ -8,7 +8,7 @@ import typer
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
-from turkishinput import prompt_turkish
+from practice_turkish.languages import prompt_turkish
 
 
 class Difficulty(str, Enum):
@@ -202,5 +202,9 @@ def numbers(
                 f"[red]Incorrect![/red] Right answer:\n> [green]{correct_answer}[/green]")
 
 
-if __name__ == "__main__":
+def main() -> None:
     typer.run(numbers)
+
+
+if __name__ == "__main__":
+    main()

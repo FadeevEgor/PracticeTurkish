@@ -3,9 +3,9 @@ from enum import Enum
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
-from turkishinput import prompt_turkish
-from russianinput import prompt_russian
-from englishinput import prompt_english
+from practice_turkish.languages.turkishinput import prompt_turkish
+from practice_turkish.languages.russianinput import prompt_russian
+from practice_turkish.languages.englishinput import prompt_english
 
 
 class Language(str, Enum):

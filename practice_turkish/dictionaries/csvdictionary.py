@@ -2,8 +2,8 @@ from typing import Optional, Type, TypeVar
 from dataclasses import dataclass, asdict
 import csv
 
-from languages import Language
-from dictionary import DictionaryEntry, DictionaryFormatError
+from practice_turkish.languages import Language
+from practice_turkish.dictionaries import DictionaryEntry, DictionaryFormatError
 
 DI = TypeVar("DI", bound="CSVDictionaryEntry")
 

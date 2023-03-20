@@ -2,9 +2,9 @@ import re
 from typing import Type, Optional, TypeVar
 from dataclasses import dataclass
 
-from languages import Language
-from dictionary import DictionaryEntry, Dictionary
-from parse import inside_parenthesis
+from practice_turkish.languages import Language
+from practice_turkish.dictionaries import DictionaryEntry
+from practice_turkish.dictionaries.parse import inside_parenthesis
 
 T = TypeVar("T", bound="TurkrutDictionaryEntry")
 

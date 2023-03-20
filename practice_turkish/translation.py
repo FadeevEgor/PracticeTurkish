@@ -1,6 +1,6 @@
-from enum import Enum, auto
+from enum import Enum
 from functools import partial
-from typing import Type, Optional
+from typing import Type, Callable
 import random
 
 from rich import print
@@ -8,11 +8,14 @@ import typer
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
-from dictionary import Dictionary, DictionaryEntry
-from languages import prompt_way_of_translation
-from turkrutdictionary import TurkrutDictionaryEntry
-from csvdictionary import CSVDictionaryEntry
-from filepath import prompt_filepath
+from practice_turkish.languages import prompt_way_of_translation
+from practice_turkish.filepath import prompt_filepath
+from practice_turkish.dictionaries import (
+    Dictionary,
+    DictionaryEntry,
+    CSVDictionaryEntry,
+    TurkrutDictionaryEntry,
+)
 
 
 class AnswerType(str, Enum):
@@ -25,8 +28,8 @@ class AnswerType(str, Enum):
     choice
         User picks an answer from a list of options.
     """
-    typing = auto()
-    choice = auto()
+    typing = "typing"
+    choice = "choice"
 
 
 def prompt_dictionary_type() -> Type[DictionaryEntry]:
@@ -167,64 +170,26 @@ def answer_with_choice(
     return False
 
 
-def translation(
-    path: Optional[str] = typer.Option(
-        None, "--path", help="Path to an exercise file."
-    ),
-    shuffle: Optional[bool] = typer.Option(
-        None, "--shuffle", help="Whether to shuffle entries in the exercise or not"
-    ),
-    answer_type: Optional[AnswerType] = typer.Option(
-        None, "--answer", help="Whether to answer by typing it in or by choosing it from multiple options"
-    )
-) -> None:
-    """Run a translation session based on a dictionary.
+def prepare_session() -> tuple[Dictionary, Callable[[DictionaryEntry], bool]]:
+    """Prepare translation session.
 
-    1) Load the dictionary based on a given path (prompted if `path` is None);
-    2) Prompt the user to translate each entry in the dictionary, possibly in 
-    a shuffled order (prompted if `shuffle` is None);
-    3) Show summary of the session, and sends mistakes to telegram.   
-
-    Parameters
-    ----------
-    path : Optional[str]
-        A string representing path to the dictionary file, or None (default)
-        if it is to be prompted within session.
-    shuffle : Optional[bool]
-        True, if the dictionary is to be shuffled. 
-        False, if the order of entries in the dictionary to be kept.
-        None (default), if whether to shuffle the dictionary or note to be
-        prompted.
-    answer_type: Optional[AnswerType]
-        Form of the answers by an user. An enum with following values. 
-        AnswerType.typing, if the answer is to be typed in.
-        AnswerType.choice, if the answer is to be chosen for a list of 
-        options.
-        None (default), if it is to be prompted.
+    1) Prompts dictionary type, path to it and then loads it. 
     """
     dictionary_entry_type = prompt_dictionary_type()
-
-    if path is None:
-        path = prompt_filepath(
-            message="Choose file to practice: ",
-            is_file=True,
-            extension=dictionary_entry_type.extension(),
-            directory=dictionary_entry_type.default_directory()
-        )
+    path = prompt_filepath(
+        message="Choose file to practice: ",
+        is_file=True,
+        extension=dictionary_entry_type.extension(),
+        directory=dictionary_entry_type.default_directory()
+    )
     dictionary = Dictionary.from_file(path, dictionary_entry_type)
-
-    if shuffle is None:
-        shuffle = prompt_shuffle()
-    if shuffle:
+    if prompt_shuffle():
         dictionary.shuffle()
 
     a2b = prompt_way_of_translation(
         dictionary.language_a, dictionary.language_b
     )
-    if answer_type is None:
-        answer_type = prompt_answer_type()
-
-    match answer_type:
+    match prompt_answer_type():
         case AnswerType.typing:
             answer_function = partial(
                 answer_with_prompt, a2b=a2b
@@ -236,6 +201,23 @@ def translation(
                 dictionary=dictionary
             )
 
+    return dictionary, answer_function
+
+
+def translation(
+    config: str = typer.Option(
+        "config.ini", "--config", help="Path to your configuration file."
+    )
+) -> None:
+    """Run a translation session based on a dictionary.
+
+    Parameters
+    ----------
+    config : str
+        A string representing path to your configuration file, default is 
+        'config.ini'.
+    """
+    dictionary, answer_function = prepare_session()
     mistakes = Dictionary([], dictionary.language_a, dictionary.language_b)
     for entry in dictionary:
         is_correct = answer_function(entry)
@@ -249,8 +231,12 @@ def translation(
     print(f"Correct:   [green]{correct:3}[/green]/{total}")
     print(f"Incorrect: [red]{incorrect:3}[/red]/{total}")
     if inquirer.confirm(message="Send your mistakes to telegram", default=True).execute():
-        mistakes.send_to_telegram()
+        mistakes.send_to_telegram(config)
+
+
+def main() -> None:
+    typer.run(translation)
 
 
 if __name__ == "__main__":
-    typer.run(translation)
+    main()

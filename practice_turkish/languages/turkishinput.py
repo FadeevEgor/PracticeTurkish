@@ -6,7 +6,7 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.completion import Completer, Completion, CompleteEvent
 from prompt_toolkit.validation import Validator, ValidationError
 
-from clipboard import copy_to_clipboard
+from practice_turkish.languages.clipboard import copy_to_clipboard
 
 
 nonlatin_letters = {

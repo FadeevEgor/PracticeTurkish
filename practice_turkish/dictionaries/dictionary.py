@@ -6,8 +6,8 @@ from random import shuffle
 from rich import print
 from rich.table import Table
 
-from languages import Language, PrompterInTheLanguage
-from bot import APIConfiguration, send_to_telegram, TelegramError
+from practice_turkish.languages import Language, PrompterInTheLanguage
+from practice_turkish.dictionaries.telegram import APIConfiguration, send_to_telegram, TelegramError
 
 DI = TypeVar('DI', bound='DictionaryEntry')
 D = TypeVar('D', bound='Dictionary')

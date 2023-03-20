@@ -9,11 +9,10 @@ from rich import print
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
-from languages import Language, PrompterInTheLanguage, prompt_language
-from dictionary import Dictionary
-from csvdictionary import CSVDictionaryEntry
-from filepath import prompt_filepath
-from parse import inside_parenthesis
+from practice_turkish.languages import Language, PrompterInTheLanguage, prompt_language
+from practice_turkish.dictionaries import Dictionary, CSVDictionaryEntry
+from practice_turkish.filepath import prompt_filepath
+from practice_turkish.dictionaries.parse import inside_parenthesis
 
 
 class WritingMode(str, Enum):
@@ -219,5 +218,9 @@ def make_dictionary(
             })
 
 
-if __name__ == "__main__":
+def main() -> None:
     typer.run(make_dictionary)
+
+
+if __name__ == "__main__":
+    main()
