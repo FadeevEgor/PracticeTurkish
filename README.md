@@ -23,7 +23,7 @@ folder/
 ├── CSV/
 ├── config.ini
 ```
-You can create a folder with the exact structure, by cloning the repository [PracticeTurkishDictionaries](https://github.com/FadeevEgor/PracticeTurkishDictionaries).  
+You can create a folder with the exact structure, by cloning the repository [PracticeTurkishDictionaries](https://github.com/FadeevEgor/PracticeTurkishDictionaries). As a bonus you will get a few ready to use dictionaries used by author of the package.  
 
 Then, I recommend you to setup a new virtual environment in the folder, but if you're not familiar with python virtual environments, you can install the package globally with little to no effort.
 
