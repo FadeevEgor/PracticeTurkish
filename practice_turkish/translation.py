@@ -173,7 +173,17 @@ def answer_with_choice(
 def prepare_session() -> tuple[Dictionary, Callable[[DictionaryEntry], bool]]:
     """Prepare translation session.
 
-    1) Prompts dictionary type, path to it and then loads it. 
+    1) Prompts dictionary type, path to it and then loads it.
+    2) Prompts form of answering, and prepares answer function
+
+    Returns
+    ----------
+    dictionary: Dictionary
+        Loaded dictionary.
+    answer_function: Callable[[DictionaryEntry], bool]
+        Function taking in a dictionary entry, prompting user to translate it
+        and returning boolean value indicating if the given translation is 
+        correct.  
     """
     dictionary_entry_type = prompt_dictionary_type()
     path = prompt_filepath(
