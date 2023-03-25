@@ -67,11 +67,11 @@ numbers
 
 ## Telegram bot configuration
 
-Telegram bot **[@PracticeTurkishBot](t.me/PracticeTurkishBot)** is able to send you a message with all mistakes you made during a session. It helps to learn words you're struggling with, since you can see them all in one place and practice them any time. 
+Telegram bot **[@PracticeTurkishBot](https://t.me/PracticeTurkishBot)** is able to send you a message with all mistakes you made during a session. It helps to learn words you're struggling with, since you can see them all in one place and practice them any time. 
 
 In order for the bot to be able to send messages directly to you, it's necessary to configure the bot by creating a file **config.ini** with correct content, ideally in the folder with your dictionaries.
 
-First, start a private chat with the bot. You can find him either by following the link [t.me/PracticeTurkishBot](t.me/PracticeTurkishBot) or by typing **PracticeTurkishBot** in the search bar.
+First, start a private chat with the bot. You can find him either by following the link [t.me/PracticeTurkishBot](https://t.me/PracticeTurkishBot) or by typing **PracticeTurkishBot** in the search bar.
 
 In response to command `/config`, it'll send you a message with the content of your configuration file. Here's how it'll look like.
 ```
