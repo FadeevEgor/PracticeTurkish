@@ -230,8 +230,9 @@ def translation(
     correct = total - incorrect
     print(f"Correct:   [green]{correct:3}[/green]/{total}")
     print(f"Incorrect: [red]{incorrect:3}[/red]/{total}")
-    if inquirer.confirm(message="Send your mistakes to telegram", default=True).execute():
-        mistakes.send_to_telegram(config)
+    if mistakes:
+        if inquirer.confirm(message="Send your mistakes to telegram", default=True).execute():
+            mistakes.send_to_telegram(config)
 
 
 def main() -> None:
