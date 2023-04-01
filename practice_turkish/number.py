@@ -8,7 +8,7 @@ import typer
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
-from practice_turkish.languages import prompt_turkish
+from practice_turkish.languages import Language, PrompterInTheLanguage
 
 
 class Difficulty(str, Enum):
@@ -186,13 +186,14 @@ def numbers(
         case difficulty.advanced:
             number_generator = partial(random.randrange, 10 ** 12)
 
+    prompter = PrompterInTheLanguage(Language.turkish)
     while True:
         number = number_generator()
         correct_answer = spell_number(number)
         print(
             f"Spell [yellow]{number:10_}[/yellow]. Press [blue]enter[/blue] to escape."
         )
-        user_answer = prompt_turkish()
+        user_answer = prompter.prompt()
         if not user_answer:
             return
         if user_answer.split() == correct_answer.split():
