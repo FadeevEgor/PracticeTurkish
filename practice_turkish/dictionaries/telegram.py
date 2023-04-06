@@ -1,5 +1,6 @@
 from configparser import ConfigParser, SectionProxy
 from dataclasses import dataclass
+import json
 
 import requests
 
@@ -108,11 +109,11 @@ def send_to_telegram(
     """
     response = requests.post(
         url=url,
-        data={
+        data=json.dumps({
             "user id": user_id,
             "token": token,
             "text": text
-        }
+        })
     )
     if response.status_code == 403:
         raise AuthenticationError(
