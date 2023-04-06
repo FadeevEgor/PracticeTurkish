@@ -1,6 +1,7 @@
 from configparser import ConfigParser, SectionProxy
 from dataclasses import dataclass
 import json
+from typing import ClassVar
 
 import requests
 
@@ -37,7 +38,7 @@ class APIConfiguration:
         The token of the user messages are to be sent to.
         Should be a string of 8 symbols: latin letters (any case) and digits.
     """
-    url: str
+    url: ClassVar[str] = "https://redirectfunction-d2ooxt72na-lm.a.run.app"
     user_id: int
     token: str
 
@@ -68,11 +69,10 @@ class APIConfiguration:
                 f"Configuration file '{path}' is incorrect: missing 'BOT API' section."
             )
 
-        URL = _get_and_check_str(API_section, "URL", path)
         user_id = _get_and_check_int(API_section, "USER ID", path)
         token = _get_and_check_str(API_section, "TOKEN", path)
 
-        return cls(URL, user_id, token)
+        return cls(user_id, token)
 
 
 def send_to_telegram(
