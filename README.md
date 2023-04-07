@@ -76,7 +76,6 @@ First, start a private chat with the bot. You can find him either by following t
 In response to command `/config`, it'll send you a message with the content of your configuration file. Here's how it'll look like.
 ```
 [BOT API]
-URL = https://http-d2ooxt72na-lm.a.run.app/external
 USER ID = YOURID
 TOKEN = YOURTOKEN
 ```
