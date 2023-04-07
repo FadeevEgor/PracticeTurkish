@@ -60,8 +60,7 @@ def prompt_if_file_exists() -> WritingMode:
                 value=WritingMode.EXTEND,
                 name="Extend. Only possible if the file is a CSV dictionary.",
             ),
-            Choice(value=WritingMode.EXIT,
-                   name="Abort the program. No data loss."),
+            Choice(value=WritingMode.EXIT, name="Abort the program. No data loss."),
             Choice(
                 value=WritingMode.OVERWRITE,
                 name="Overwrite the existing file. Possible data loss.",
@@ -209,8 +208,7 @@ def prompt_dictionary(dictionary: CSVDict) -> None:
         A dictionary to fill in with entries.
     """
     while True:
-        entry = prompt_dictionary_entry(
-            dictionary.language_a, dictionary.language_b)
+        entry = prompt_dictionary_entry(dictionary.language_a, dictionary.language_b)
         if entry is None:
             return
         dictionary.insert(entry)

@@ -4,12 +4,11 @@ from typing import Generator, Any
 from prompt_toolkit import prompt
 from prompt_toolkit.document import Document
 from prompt_toolkit.completion import Completer, Completion, CompleteEvent
-from prompt_toolkit.validation import Validator, ValidationError
 
 from practice_turkish.languages.clipboard import copy_to_clipboard
+from practice_turkish.languages.validator import SymbolValidator
 
-
-nonlatin_letters = {
+non_latin_letters = {
     "a": "â",
     "c": "ç",
     "C": "Ç",
@@ -42,48 +41,18 @@ class TurkishCompleter(Completer):
         "Generator yielding completions for the symbol right before the cursor"
         active_letter = document.char_before_cursor
         try:
-            suggestion = nonlatin_letters[active_letter]
+            suggestion = non_latin_letters[active_letter]
         except KeyError:
             return
         yield Completion(suggestion, start_position=-1)
 
 
-class TurkishValidator(Validator):
-    """A class used to validate an input in turkish.
-
-    Used by the `prompt` function from `prompt_toolkit` library to ensure that
-    only permissible turkish symbols are typed in by the user. Extends
-    `Validator` class given by the library and overloads the `validate` method
-    to check if all typed in symbols are permissible.
-    """
+class TurkishValidator(SymbolValidator):
+    """A class used to validate an input in turkish."""
 
     latin_letters = set(ascii_letters) - set("qQxXwW")
     non_latin_letters = set("âçÇğĞıIiİöÖşŞüÜ")
     valid_symbols = latin_letters | non_latin_letters | {" "}
-
-    def __init__(self, additional_symbols: str = "") -> None:
-        super().__init__()
-        self.valid_symbols |= set(additional_symbols)
-
-    def validate(self, document: Document) -> None:
-        """Check if all typed in symbols are permissible.
-
-        Parameters
-        ----------
-        document : Document
-            A current state of prompting session.
-
-        Raises
-        ----------
-        ValidationError
-            If the document contains prohibited symbols.
-        """
-        for i, s in enumerate(document.text):
-            if s not in self.valid_symbols:
-                raise ValidationError(
-                    message="This input contains symbols out of Turkish alphabet.",
-                    cursor_position=i,
-                )
 
 
 def prompt_turkish(

@@ -80,8 +80,7 @@ class DictionaryEntry(ABC):
             The string typed in by the user.
         """
         query = self.query_a if a2b else self.query_b
-        prompter = PrompterInTheLanguage(
-            self.language_b if a2b else self.language_a)
+        prompter = PrompterInTheLanguage(self.language_b if a2b else self.language_a)
         return prompter.prompt(f"{query} ⇨ ", additional_symbols=",-")
 
     def check_translation(self, a2b: bool, translation: str) -> bool:
@@ -204,9 +203,7 @@ class Dictionary(Generic[DE]):
     language_b: Language
 
     @classmethod
-    def from_file(
-        cls: Type[D], path: str, type: Type[DE]
-    ) -> D:
+    def from_file(cls: Type[D], path: str, type: Type[DE]) -> D:
         "Read dictionary form a file assuming the type T."
         return cls(*type.read_dictionary_from_file(path))
 
@@ -235,8 +232,7 @@ class Dictionary(Generic[DE]):
         text = "\n".join(rows)
         try:
             config = APIConfiguration.read_ini(path)
-            status = send_to_telegram(
-                config.url, config.user_id, config.token, text)
+            status = send_to_telegram(config.url, config.user_id, config.token, text)
         except TelegramError as exception:
             exception_type = type(exception).__name__
             print(f"[red]{exception_type}[/red]: [yellow]{exception}[/yellow]")
