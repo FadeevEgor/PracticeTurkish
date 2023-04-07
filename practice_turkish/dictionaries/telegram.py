@@ -8,17 +8,14 @@ import requests
 
 class TelegramError(Exception):
     "Generic error with regard to the bot API."
-    pass
 
 
 class ConfigurationError(TelegramError):
     "Raised when an error detected before trying to use it."
-    pass
 
 
 class AuthenticationError(TelegramError):
     "Raised when a pair of (user_id, token) is rejected by the bot."
-    pass
 
 
 @dataclass
@@ -30,7 +27,7 @@ class APIConfiguration:
     ----------
     url : str
         The url of the bot API.
-        Should be correct in the `config.ini` file at the github repository. 
+        Should be correct in the `config.ini` file at the github repository.
     user_id : int
         The telegram ID number of the user messages are to be sent to.
         Should be an integer.
@@ -38,6 +35,7 @@ class APIConfiguration:
         The token of the user messages are to be sent to.
         Should be a string of 8 symbols: latin letters (any case) and digits.
     """
+
     url: ClassVar[str] = "https://redirectfunction-d2ooxt72na-lm.a.run.app"
     user_id: int
     token: str
@@ -58,9 +56,7 @@ class APIConfiguration:
         """
         config = ConfigParser()
         if not config.read(path):
-            raise ConfigurationError(
-                f"Missing '{path}' configuration file!"
-            )
+            raise ConfigurationError(f"Missing '{path}' configuration file!")
 
         try:
             API_section = config["BOT API"]
@@ -109,15 +105,13 @@ def send_to_telegram(
     """
     response = requests.post(
         url=url,
-        data=json.dumps({
-            "user id": user_id,
-            "token": token,
-            "text": text
-        })
+        data=json.dumps({"user id": user_id, "token": token, "text": text}),
+        timeout=10,
     )
     if response.status_code == 403:
         raise AuthenticationError(
-            "User token is rejected!\nPlease, check 'USER ID' and 'TOKEN' fields in your configuration file."
+            """User token is rejected!
+            Please, check 'USER ID' and 'TOKEN' fields in your configuration file."""
         )
     if response.status_code != 200:
         raise requests.HTTPError(response.text)

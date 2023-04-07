@@ -1,7 +1,7 @@
 from enum import Enum
 from string import Template
 import os
-from typing import Optional
+from typing import Optional, TypeAlias
 import csv
 
 import typer
@@ -15,17 +15,24 @@ from practice_turkish.filepath import prompt_filepath
 from practice_turkish.dictionaries.parse import inside_parenthesis
 
 
+CSVDict: TypeAlias = Dictionary[CSVDictionaryEntry]
+
+
 class WritingMode(str, Enum):
-    extend = "extend"
-    create = "create"
-    exit = "exit"
-    overwrite = "overwrite"
+    """Enum used to represent writing mode."""
+
+    EXTEND = "EXTEND"
+    CREATE = "CREATE"
+    EXIT = "EXIT"
+    OVERWRITE = "OVERWRITE"
 
 
-prompt_text = Template("""Type in the word or words in [green]$language[/green].
-All parts outside of parenthesis separated by [yellow]"/"[/yellow] would be considered as valid answers.
+prompt_text = Template(
+    """Type in the word or words in [green]$language[/green].
 Text inside parenthesis would be considered as a hint.
-[red]Empty string[/red] to exit immediately.""")
+Other values separated by [yellow]"/"[/yellow] would be considered as valid answers.
+[red]Empty string[/red] to exit immediately."""
+)
 
 
 def prompt_if_file_exists() -> WritingMode:
@@ -33,36 +40,81 @@ def prompt_if_file_exists() -> WritingMode:
 
     Invoked if the user typed in a path leading to an existing file.
     Prompts the user to pick the mode to continue with.
-    1) Extend: assuming the path leads to an existing correct CSV dictionary, 
+    1) Extend: assuming the path leads to an existing correct CSV dictionary,
     all new entries are to be inserted in the dictionary and saved to the same
-    file. 
-    2) Exit: aborts the program immediately. Safe option, existing file is 
+    file.
+    2) Exit: aborts the program immediately. Safe option, existing file is
     untouched.
-    3) Overwrite: ignores the existing file and overwrites its content with 
+    3) Overwrite: ignores the existing file and overwrites its content with
     entries typed in during following session.
 
     Returns
     ----------
     mode : WritingMode
-        WritingMode.extend, WritingMode.exit or WritingMode.overwrite. 
+        WritingMode.extend, WritingMode.exit or WritingMode.overwrite.
     """
     return inquirer.select(
         message="Such file already exists. Do you want to",
         choices=[
             Choice(
-                value=WritingMode.extend,
-                name="Extend. Only possible if the file is a CSV dictionary."
+                value=WritingMode.EXTEND,
+                name="Extend. Only possible if the file is a CSV dictionary.",
             ),
+            Choice(value=WritingMode.EXIT, name="Abort the program. No data loss."),
             Choice(
-                value=WritingMode.exit,
-                name="Abort the program. No data loss."
+                value=WritingMode.OVERWRITE,
+                name="Overwrite the existing file. Possible data loss.",
             ),
-            Choice(
-                value=WritingMode.overwrite,
-                name="Overwrite the existing file. Possible data loss."
-            )
-        ]
+        ],
     ).execute()
+
+
+def prepare_session(path: Optional[str]) -> tuple[CSVDict, str]:
+    """Prepares completion session for creating a CSV dictionary.
+
+    Prompts path if not given. Then depending on existence of dictionary there and
+    users choice either creates new file, extends existing dictionary, rewrites it,
+    or aborts the process.
+
+    Parameters
+    ----------
+    path : Optional[str]
+        A string representing path new dictionary to write to. Will be prompted
+        from user, if not given.
+
+    Returns
+    ----------
+    dictionary : Dictionary[CSVDictionaryEntry]
+        Loaded existing dictionary or a new empty dictionary.
+    path : str
+        A string representing path new dictionary to write to.
+    """
+    if path is None:
+        path = prompt_filepath(
+            "Type in destination path: ",
+            extension=".csv",
+            is_file=False,
+            directory=CSVDictionaryEntry.default_directory(),
+        )
+
+    mode = WritingMode.CREATE
+    if os.path.isfile(path):
+        mode = prompt_if_file_exists()
+        if mode == WritingMode.EXIT:
+            raise SystemExit("Aborting the program")
+
+    match mode:
+        case WritingMode.CREATE | WritingMode.OVERWRITE:
+            la = prompt_language("Choose first language.")
+            lb = prompt_language("Choose second language.")
+            dictionary: CSVDict = Dictionary([], la, lb)
+        case WritingMode.EXTEND:
+            dictionary = Dictionary.from_file(path, CSVDictionaryEntry)
+            la, lb = dictionary.language_a, dictionary.language_b
+            print(
+                f"Detected languages are [green]{la}[/green] and [green]{lb}[/green].\n"
+            )
+    return dictionary, path
 
 
 def parse_prompt(s: str) -> tuple[list[str], Optional[str]]:
@@ -89,32 +141,32 @@ def parse_prompt(s: str) -> tuple[list[str], Optional[str]]:
     print(s)
     hint = inside_parenthesis(s)
     words = s.replace(f"({hint})", "").strip().split("/")
-    if hint == "":
-        hint = None
-    return words, hint
+    return words, hint if hint else None
 
 
 def prompt_one_language(language: Language) -> str:
-    """Prompt the user to type in a part of an entry corresponding to one language. 
+    """Prompt the user to type in a part of an entry corresponding to one language.
 
     Parameters
     ----------
     language : Language
-        The language the prompt should be accepted in. 
+        The language the prompt should be accepted in.
 
     Returns
     ----------
     text : str
         Line of text typed in by the user. Guaranteed to be in the language given
-        as first parameter. 
+        as first parameter.
     """
     print(prompt_text.substitute({"language": language.name}))
     prompter = PrompterInTheLanguage(language)
     return prompter.prompt(additional_symbols=",-/()")
 
 
-def prompt_dictionary_entry(language_a: Language, language_b: Language) -> Optional[CSVDictionaryEntry]:
-    """Prompt the user to type in a dictionary entry. 
+def prompt_dictionary_entry(
+    language_a: Language, language_b: Language
+) -> Optional[CSVDictionaryEntry]:
+    """Prompt the user to type in a dictionary entry.
 
     Prompts the user to type in a line of text twice. Once for language A,
     and once for language B. If either of the lines typed in by the user
@@ -123,10 +175,10 @@ def prompt_dictionary_entry(language_a: Language, language_b: Language) -> Optio
     Parameters
     ----------
     language_a : Language
-        Language A of the dictionary. 
+        Language A of the dictionary.
 
     language_b : Language
-        Language B of the dictionary. 
+        Language B of the dictionary.
 
 
     Returns
@@ -144,14 +196,48 @@ def prompt_dictionary_entry(language_a: Language, language_b: Language) -> Optio
         return None
     words_b, hint_b = parse_prompt(words_and_hint)
 
-    return CSVDictionaryEntry(
-        words_a,
-        words_b,
-        language_a,
-        language_b,
-        hint_a,
-        hint_b
-    )
+    return CSVDictionaryEntry(words_a, words_b, language_a, language_b, hint_a, hint_b)
+
+
+def prompt_dictionary(dictionary: CSVDict) -> None:
+    """Prompts user to type in all dictionary entries.
+
+    Parameters
+    ----------
+    dictionary: Dictionary[CSVDictionaryEntry]
+        A dictionary to fill in with entries.
+    """
+    while True:
+        entry = prompt_dictionary_entry(Dictionary.language_a, Dictionary.language_b)
+        if entry is None:
+            return
+        dictionary.insert(entry)
+
+
+def write_dictionary(dictionary: CSVDict, path: str) -> None:
+    """Write dictionary to a CSV file.
+
+    Parameters
+    ----------
+    dictionary : Dictionary[CSVDictionaryEntry]
+        Dictionary to write.
+    path : str
+        A string representing filepath to write to.
+    """
+    la, lb = Dictionary.language_a, Dictionary.language_b
+    with open(path, mode="w", encoding="utf-8", newline="") as f:
+        field_names = [la.name, lb.name, f"{la} hint", f"{lb} hint"]
+        writer = csv.DictWriter(f, delimiter=";", fieldnames=field_names)
+        writer.writeheader()
+        for item in sorted(dictionary):
+            writer.writerow(
+                {
+                    la.name: "/".join(item.words_a),
+                    lb.name: "/".join(item.words_b),
+                    f"{la} hint": item._hint_a,
+                    f"{lb} hint": item._hint_b,
+                }
+            )
 
 
 def make_dictionary(
@@ -161,64 +247,25 @@ def make_dictionary(
 ) -> None:
     """Make a CSV dictionary by prompting the user to type in each entry.
 
-    Creates, extends or overwrites an existing CSV dictionary prompting 
-    the user to type in each entry sequentially. An empty entry indicates 
+    Creates, extends or overwrites an existing CSV dictionary prompting
+    the user to type in each entry sequentially. An empty entry indicates
     the end of the dictionary.
 
     Parameters
     ----------
     path : Optional[str]
         A string representing the filepath, the dictionary is to be written
-        to. If None, the filepath is prompted from the user during the 
+        to. If None, the filepath is prompted from the user during the
         session.
     """
-    if path is None:
-        path = prompt_filepath(
-            "Type in destination path: ",
-            extension=".csv",
-            is_file=False,
-            directory=CSVDictionaryEntry.default_directory()
-        )
-
-    mode = WritingMode.create
-    if os.path.isfile(path):
-        mode = prompt_if_file_exists()
-        if mode == WritingMode.exit:
-            raise SystemExit("Aborting the program")
-
-    match mode:
-        case WritingMode.create | WritingMode.overwrite:
-            la = prompt_language("Choose first language.")
-            lb = prompt_language("Choose second language.")
-            dictionary = Dictionary([], la, lb)
-        case WritingMode.extend:
-            dictionary = Dictionary.from_file(path, CSVDictionaryEntry)
-            la, lb = dictionary.language_a, dictionary.language_b
-            print(
-                f"Detected languages are [green]{la}[/green] and [green]{lb}[/green].\n"
-            )
-
-    while True:
-        item = prompt_dictionary_entry(la, lb)
-        if item is None:
-            break
-        dictionary.insert(item)
-
+    dictionary, path = prepare_session(path)
+    prompt_dictionary(dictionary)
     dictionary.print("New dictionary")
-    with open(path, mode="w", encoding="utf-8", newline="") as f:
-        field_names = [la.name, lb.name, f"{la} hint", f"{lb} hint"]
-        writer = csv.DictWriter(f, delimiter=";", fieldnames=field_names)
-        writer.writeheader()
-        for item in sorted(dictionary):
-            writer.writerow({
-                la.name: "/".join(item.words_a),
-                lb.name: "/".join(item.words_b),
-                f"{la} hint": item._hint_a,
-                f"{lb} hint": item._hint_b
-            })
+    write_dictionary(dictionary, path)
 
 
 def main() -> None:
+    """If open as a script, run make dictionary function."""
     typer.run(make_dictionary)
 
 

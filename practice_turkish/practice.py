@@ -8,9 +8,9 @@ from practice_turkish.number import numbers
 def main() -> None:
     "Create Typer application and run it."
     app = typer.Typer()
-    translation_ = app.command(help="Practice translation")(translation)
-    make_csv_ = app.command(help="Create a new CSV dictionary")(make_csv)
-    numbers_ = app.command(help="Practice numbers")(numbers)
+    app.command(help="Practice translation")(translation)
+    app.command(help="Create a new CSV dictionary")(make_csv)
+    app.command(help="Practice numbers")(numbers)
     app()
 
 

@@ -1,7 +1,7 @@
 import random
 from enum import Enum
 from functools import partial
-from typing import Optional
+from typing import Optional, Callable
 
 from rich import print
 import typer
@@ -12,10 +12,12 @@ from practice_turkish.languages import Language, PrompterInTheLanguage
 
 
 class Difficulty(str, Enum):
-    digits = "digits"
-    tens = "tens"
-    basic = "basic"
-    advanced = "advanced"
+    """An enum used to represent difficulty."""
+
+    DIGITS = "DIGITS"
+    TENS = "TENS"
+    BASIC = "BASIC"
+    ADVANCED = "ADVANCED"
 
 
 TEN = 10
@@ -38,7 +40,7 @@ digits = {
 }
 
 tens = {
-    0:  "",
+    0: "",
     10: "on",
     20: "yirmi",
     30: "otuz",
@@ -47,14 +49,14 @@ tens = {
     60: "altmış",
     70: "yetmiş",
     80: "seksen",
-    90: "doksan"
+    90: "doksan",
 }
 
 more = {
     ONE_HUNDRED: "yüz",
     ONE_THOUSAND: "bin",
     ONE_MILLION: "milyon",
-    ONE_BILLION: "milyar"
+    ONE_BILLION: "milyar",
 }
 
 
@@ -66,18 +68,16 @@ def spell_small_number(number: int, dismiss_one: bool = False) -> str:
     number : int
         A positive integer number to spell. 0 <= number <= 999.
     dismiss_one : bool
-        Whether to put 'bir' in front or note. Necessary, since 
+        Whether to put 'bir' in front or note. Necessary, since
         `bin` used instead of `bir bin`.
 
     Returns
     ----------
     spelling : str
-        A line of text with spelling of the number in turkish. 
+        A line of text with spelling of the number in turkish.
     """
     if number not in range(1000):
-        raise ValueError(
-            "The number isn't a positive integer number lesser than 999."
-        )
+        raise ValueError("The number isn't a positive integer number lesser than 999.")
 
     if dismiss_one and number == 1:
         return ""
@@ -92,7 +92,7 @@ def spell_small_number(number: int, dismiss_one: bool = False) -> str:
             hundred = "yüz"
         case _:
             hundred = digits[n_hundreds] + " yüz"
-    ten = tens[n_tens*10]
+    ten = tens[n_tens * 10]
     one = digits[n_ones] if n_ones > 0 else ""
     return f"{hundred} {ten} {one}".strip()
 
@@ -108,9 +108,9 @@ def spell_number(number: int) -> str:
     Returns
     ----------
     spelling : str
-        A line of text with spelling of the number in turkish. 
+        A line of text with spelling of the number in turkish.
     """
-    if number not in range(10 ** 12):
+    if number not in range(10**12):
         raise ValueError("Too big number")
 
     if number == 0:
@@ -122,19 +122,13 @@ def spell_number(number: int) -> str:
 
     parts = []
     if n_billions:
-        parts.append(
-            f"{spell_small_number(n_billions)} milyar".strip()
-        )
+        parts.append(f"{spell_small_number(n_billions)} milyar".strip())
 
     if n_millions:
-        parts.append(
-            f"{spell_small_number(n_millions)} milyon".strip()
-        )
+        parts.append(f"{spell_small_number(n_millions)} milyon".strip())
 
     if n_thousands:
-        parts.append(
-            f"{spell_small_number(n_thousands, True)} bin".strip()
-        )
+        parts.append(f"{spell_small_number(n_thousands, True)} bin".strip())
 
     parts.append(spell_small_number(reminder))
     return " ".join(parts).strip()
@@ -146,45 +140,46 @@ def prompt_difficulty() -> Difficulty:
     Returns
     ----------
     difficulty : Difficulty
-        A value from `Difficulty` enum. 
+        A value from `Difficulty` enum.
     """
     return inquirer.select(
         message="Choose difficulty:",
         choices=[
-            Choice(value=Difficulty.digits, name="digits"),
-            Choice(value=Difficulty.tens, name="tens"),
-            Choice(value=Difficulty.basic, name="basic"),
-            Choice(value=Difficulty.advanced, name="advanced"),
+            Choice(value=Difficulty.DIGITS, name="digits"),
+            Choice(value=Difficulty.TENS, name="tens"),
+            Choice(value=Difficulty.BASIC, name="basic"),
+            Choice(value=Difficulty.ADVANCED, name="advanced"),
         ],
     ).execute()
 
 
 def numbers(
-        difficulty: Optional[Difficulty] = typer.Option(
-            None, "--difficulty", help="Difficulty"
-        )
+    difficulty: Optional[Difficulty] = typer.Option(
+        None, "--difficulty", help="Difficulty"
+    )
 ) -> None:
     """Practice session for numbers.
 
     Parameters
     ----------
     difficulty : Optional[Difficulty]
-        A value from `Difficulty` enum. Prompted from user if None. 
+        A value from `Difficulty` enum. Prompted from user if None.
     """
     if difficulty is None:
         difficulty = prompt_difficulty()
 
+    number_generator: Callable
     match difficulty:
-        case difficulty.digits:
+        case difficulty.DIGITS:
             number_generator = partial(random.choice, list(digits.keys()))
-        case difficulty.tens:
+        case difficulty.TENS:
             number_generator = partial(random.choice, list(tens.keys()))
-        case difficulty.basic:
+        case difficulty.BASIC:
             number_generator = partial(
                 random.choice, list((digits | tens | more).keys())
             )
-        case difficulty.advanced:
-            number_generator = partial(random.randrange, 10 ** 12)
+        case difficulty.ADVANCED:
+            number_generator = partial(random.randrange, 10**12)
 
     prompter = PrompterInTheLanguage(Language.turkish)
     while True:
@@ -200,10 +195,12 @@ def numbers(
             print("[green]Correct![/green]")
         else:
             print(
-                f"[red]Incorrect![/red] Right answer:\n> [green]{correct_answer}[/green]")
+                f"[red]Incorrect![/red] Right answer:\n> [green]{correct_answer}[/green]"
+            )
 
 
 def main() -> None:
+    """If open as a script, run make number function."""
     typer.run(numbers)
 
 

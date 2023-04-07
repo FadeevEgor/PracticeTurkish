@@ -2,19 +2,19 @@ import os
 from pathlib import Path
 from typing import Generator, Optional
 
-from InquirerPy import inquirer
 from prompt_toolkit.document import Document
 from prompt_toolkit.completion import Completion, CompleteEvent
+from InquirerPy import inquirer
 from InquirerPy.prompts.filepath import FilePathCompleter
 from InquirerPy.validator import PathValidator
 
 
 class ExtensionFilePathCompleter(FilePathCompleter):
-    """A class used to generate completions for path of a file with an extension. 
+    """A class used to generate completions for path of a file with an extension.
 
     Extends `FilePathCompleter` provided by `InquirerPy` library. Overloads the
-    `get_completions` method to generate completions only for files with 
-    specified extension, given the extension is provided. 
+    `get_completions` method to generate completions only for files with
+    specified extension, given the extension is provided.
 
     Attributes
     ----------
@@ -23,7 +23,7 @@ class ExtensionFilePathCompleter(FilePathCompleter):
     only_files : bool
         True, if completions should contain only directories, False by default.
     extension : Optional[str]
-        If given, all files with extensions differing from specified will be 
+        If given, all files with extensions differing from specified will be
         filtered from completions. By default (None) no filtering is performed.
     """
 
@@ -31,15 +31,13 @@ class ExtensionFilePathCompleter(FilePathCompleter):
         self,
         only_directories: bool = False,
         only_files: bool = False,
-        extension: Optional[str] = None
+        extension: Optional[str] = None,
     ):
         super().__init__(only_directories, only_files)
         self.extension = extension
 
     def get_completions(
-        self,
-        document: Document,
-        complete_event: CompleteEvent
+        self, document: Document, complete_event: CompleteEvent
     ) -> Generator[Completion, None, None]:
         "Generator yielding possible path completions."
         all_valid_path_completions = list(
@@ -73,8 +71,8 @@ def prompt_filepath(
     extension : Optional[str]
         The extension of the filepath to be prompted.
     directory : Optional[str]
-        A string representing a path to a directory, inside of which the path 
-        should lead to. 
+        A string representing a path to a directory, inside of which the path
+        should lead to.
 
     Returns
     ----------
@@ -83,13 +81,12 @@ def prompt_filepath(
     """
     validator = PathValidator(is_file=True) if is_file else None
     completer = ExtensionFilePathCompleter(extension=extension)
-    directory = Path(directory) if directory is not None else Path.cwd()
-
+    path = Path(directory) if directory is not None else Path.cwd()
     return inquirer.text(
         message=message,
-        default=str(directory.absolute()) + os.path.sep,
+        default=str(path.absolute()) + os.path.sep,
         completer=completer,
-        validate=validator
+        validate=validator,
     ).execute()
 
 

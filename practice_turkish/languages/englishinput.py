@@ -1,4 +1,5 @@
 from string import ascii_letters
+from typing import Any
 
 from prompt_toolkit import prompt
 from prompt_toolkit.document import Document
@@ -8,11 +9,12 @@ from prompt_toolkit.validation import Validator, ValidationError
 class EnglishValidator(Validator):
     """A class used to validate an input in english.
 
-    Used by the `prompt` function from `prompt_toolkit` library to ensure that 
-    only permissible english symbols are typed in by the user. Extends 
+    Used by the `prompt` function from `prompt_toolkit` library to ensure that
+    only permissible english symbols are typed in by the user. Extends
     `Validator` class given by the library and overloads the `validate` method
     to check if all typed in symbols are permissible.
     """
+
     valid_symbols = set(list(ascii_letters + " "))
 
     def __init__(self, additional_symbols: str = "") -> None:
@@ -36,14 +38,12 @@ class EnglishValidator(Validator):
             if s not in self.valid_symbols:
                 raise ValidationError(
                     message="This input contains symbols out of english alphabet.",
-                    cursor_position=i
+                    cursor_position=i,
                 )
 
 
 def prompt_english(
-        message: str = "> ",
-        additional_symbols: str = "",
-        **kwargs
+    message: str = "> ", additional_symbols: str = "", **kwargs: Any
 ) -> str:
     """Prompt an input in English from the user.
 
@@ -52,7 +52,7 @@ def prompt_english(
     message : str
         A text to be printed before the prompt. Defaults is "> ".
     additional_symbols : str
-        A string of symbols, which should be considered valid, in addition 
+        A string of symbols, which should be considered valid, in addition
         to alphabet symbols and space.
 
     Returns

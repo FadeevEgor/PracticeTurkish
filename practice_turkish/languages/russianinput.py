@@ -1,3 +1,5 @@
+from typing import Any
+
 from prompt_toolkit import prompt
 from prompt_toolkit.document import Document
 from prompt_toolkit.validation import Validator, ValidationError
@@ -6,13 +8,14 @@ from prompt_toolkit.validation import Validator, ValidationError
 class RussianValidator(Validator):
     """A class used to validate an input in russian.
 
-    Used by the `prompt` function from `prompt_toolkit` library to ensure that 
-    only permissible russian symbols are typed in by the user. Extends 
+    Used by the `prompt` function from `prompt_toolkit` library to ensure that
+    only permissible russian symbols are typed in by the user. Extends
     `Validator` class given by the library and overloads the `validate` method
     to check if all typed in symbols are permissible.
     """
+
     lower_case = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
-    upper_letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'
+    upper_letters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
     valid_symbols = set(list(lower_case + upper_letters + " "))
 
     def __init__(self, additional_symbols: str = "") -> None:
@@ -36,14 +39,12 @@ class RussianValidator(Validator):
             if s not in self.valid_symbols:
                 raise ValidationError(
                     message="This input contains symbols out of Russian alphabet.",
-                    cursor_position=i
+                    cursor_position=i,
                 )
 
 
 def prompt_russian(
-        message: str = "> ",
-        additional_symbols: str = "",
-        **kwargs
+    message: str = "> ", additional_symbols: str = "", **kwargs: Any
 ) -> str:
     """Prompt an input in russian from the user.
 
@@ -52,7 +53,7 @@ def prompt_russian(
     message : str
         A text to be printed before the prompt. Defaults is "> ".
     additional_symbols : str
-        A string of symbols, which should be considered valid, in addition 
+        A string of symbols, which should be considered valid, in addition
         to alphabet symbols and space.
 
     Returns

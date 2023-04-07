@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Any
 
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
@@ -39,10 +40,7 @@ class PrompterInTheLanguage:
                 self.prompt_function = prompt_english
 
     def prompt(
-        self,
-        message: str = "> ",
-        additional_symbols: str = "",
-        **kwargs
+        self, message: str = "> ", additional_symbols: str = "", **kwargs: Any
     ) -> str:
         "Prompt the user in the specified language"
         return self.prompt_function(message, additional_symbols, **kwargs)
@@ -51,7 +49,7 @@ class PrompterInTheLanguage:
 language_map = {
     Language.turkish: "Türkçe",
     Language.russian: "Русский",
-    Language.english: "English"
+    Language.english: "English",
 }
 
 
@@ -70,10 +68,7 @@ def prompt_language(message: str) -> Language:
     """
     return inquirer.select(
         message=message,
-        choices=[
-            Choice(value=key, name=value)
-            for key, value in language_map.items()
-        ]
+        choices=[Choice(value=key, name=value) for key, value in language_map.items()],
     ).execute()
 
 

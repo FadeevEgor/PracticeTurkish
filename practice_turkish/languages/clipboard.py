@@ -4,12 +4,12 @@ from ctypes.wintypes import BOOL, HWND, HANDLE, HGLOBAL, UINT, LPVOID
 from ctypes import c_size_t as SIZE_T
 
 OpenClipboard = ctypes.windll.user32.OpenClipboard
-OpenClipboard.argtypes = HWND,
+OpenClipboard.argtypes = (HWND,)
 OpenClipboard.restype = BOOL
 EmptyClipboard = ctypes.windll.user32.EmptyClipboard
 EmptyClipboard.restype = BOOL
 GetClipboardData = ctypes.windll.user32.GetClipboardData
-GetClipboardData.argtypes = UINT,
+GetClipboardData.argtypes = (UINT,)
 GetClipboardData.restype = HANDLE
 SetClipboardData = ctypes.windll.user32.SetClipboardData
 SetClipboardData.argtypes = UINT, HANDLE
@@ -22,39 +22,27 @@ GlobalAlloc = ctypes.windll.kernel32.GlobalAlloc
 GlobalAlloc.argtypes = UINT, SIZE_T
 GlobalAlloc.restype = HGLOBAL
 GlobalLock = ctypes.windll.kernel32.GlobalLock
-GlobalLock.argtypes = HGLOBAL,
+GlobalLock.argtypes = (HGLOBAL,)
 GlobalLock.restype = LPVOID
 GlobalUnlock = ctypes.windll.kernel32.GlobalUnlock
-GlobalUnlock.argtypes = HGLOBAL,
+GlobalUnlock.argtypes = (HGLOBAL,)
 GlobalSize = ctypes.windll.kernel32.GlobalSize
-GlobalSize.argtypes = HGLOBAL,
+GlobalSize.argtypes = (HGLOBAL,)
 GlobalSize.restype = SIZE_T
 
 GMEM_MOVEABLE = 0x0002
 GMEM_ZEROINIT = 0x0040
 
-unicode_type = type(u'')
-
-
-def paste_from_clipboard() -> str:
-    text = None
-    OpenClipboard(None)
-    handle = GetClipboardData(CF_UNICODETEXT)
-    pcontents = GlobalLock(handle)
-    size = GlobalSize(handle)
-    if pcontents and size:
-        raw_data = ctypes.create_string_buffer(size)
-        ctypes.memmove(raw_data, pcontents, size)
-        text = raw_data.raw.decode('utf-16le').rstrip(u'\0')
-    GlobalUnlock(handle)
-    CloseClipboard()
-    return text
-
 
 def copy_to_clipboard(s: str) -> None:
-    if not isinstance(s, unicode_type):
-        s = s.decode('mbcs')
-    data = s.encode('utf-16le')
+    """Copies a content of a given string to clipboard.
+
+    Parameters
+    ----------
+    s : str
+        The string to copy from.
+    """
+    data = s.encode("utf-16le")
     OpenClipboard(None)
     EmptyClipboard()
     handle = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, len(data) + 2)

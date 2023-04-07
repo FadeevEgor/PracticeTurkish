@@ -1,5 +1,5 @@
 from string import ascii_letters
-from typing import Generator
+from typing import Generator, Any
 
 from prompt_toolkit import prompt
 from prompt_toolkit.document import Document
@@ -29,33 +29,30 @@ nonlatin_letters = {
 class TurkishCompleter(Completer):
     """A class used in order to type nonlatin letters from Turkish alphabet.
 
-    Used by the `prompt` function from `prompt_toolkit` library in order to 
-    generate completions, which allow to type in all letters from turkish 
-    alphabet with only en-US layout keyboard. Pressing tab after letters 
+    Used by the `prompt` function from `prompt_toolkit` library in order to
+    generate completions, which allow to type in all letters from turkish
+    alphabet with only en-US layout keyboard. Pressing tab after letters
     'c', 'g', 'i', 'o', 's' and 'u' offers completion with "ç", "ğ", "ı",
     "ö", "ş" and "ü".
     """
 
     def get_completions(
-            self,
-            document: Document,
-            complete_event: CompleteEvent
+        self, document: Document, complete_event: CompleteEvent
     ) -> Generator[Completion, None, None]:
         "Generator yielding completions for the symbol right before the cursor"
         active_letter = document.char_before_cursor
         try:
             suggestion = nonlatin_letters[active_letter]
         except KeyError:
-            return None
-        else:
-            yield Completion(suggestion, start_position=-1)
+            return
+        yield Completion(suggestion, start_position=-1)
 
 
 class TurkishValidator(Validator):
     """A class used to validate an input in turkish.
 
-    Used by the `prompt` function from `prompt_toolkit` library to ensure that 
-    only permissible turkish symbols are typed in by the user. Extends 
+    Used by the `prompt` function from `prompt_toolkit` library to ensure that
+    only permissible turkish symbols are typed in by the user. Extends
     `Validator` class given by the library and overloads the `validate` method
     to check if all typed in symbols are permissible.
     """
@@ -85,27 +82,25 @@ class TurkishValidator(Validator):
             if s not in self.valid_symbols:
                 raise ValidationError(
                     message="This input contains symbols out of Turkish alphabet.",
-                    cursor_position=i
+                    cursor_position=i,
                 )
 
 
 def prompt_turkish(
-    message: str = "> ",
-    additional_symbols: str = "",
-    **kwargs
+    message: str = "> ", additional_symbols: str = "", **kwargs: Any
 ) -> str:
     """Prompt an input in turkish from the user.
 
-    Prompts an input in Turkish from the user. 
-    Pressing TAB after letters 'c', 'g', 'i', 'o', 's' and 'u' will offer 
-    similar looking letters from Turkish alphabet as a replacement.  
+    Prompts an input in Turkish from the user.
+    Pressing TAB after letters 'c', 'g', 'i', 'o', 's' and 'u' will offer
+    similar looking letters from Turkish alphabet as a replacement.
 
     Parameters
     ----------
     message : str
         A text to be printed before the prompt. Defaults is "> ".
     additional_symbols : str
-        A string of symbols, which should be considered valid, in addition 
+        A string of symbols, which should be considered valid, in addition
         to alphabet symbols and space.
 
     Returns
@@ -124,6 +119,7 @@ def prompt_turkish(
 
 
 def main() -> None:
+    """If open as a script, run make number function."""
     while True:
         input_ = prompt_turkish("Test the Turkish prompt: ")
         if input_ == "":

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Type, TypeVar, Optional
+from typing import Type, TypeVar, Optional, Iterator, Generic
 from dataclasses import dataclass
 from random import shuffle
 
@@ -7,23 +7,27 @@ from rich import print
 from rich.table import Table
 
 from practice_turkish.languages import Language, PrompterInTheLanguage
-from practice_turkish.dictionaries.telegram import APIConfiguration, send_to_telegram, TelegramError
+from practice_turkish.dictionaries.telegram import (
+    APIConfiguration,
+    send_to_telegram,
+    TelegramError,
+)
 
-DI = TypeVar('DI', bound='DictionaryEntry')
-D = TypeVar('D', bound='Dictionary')
+DE = TypeVar("DE", bound="DictionaryEntry")
+D = TypeVar("D", bound="Dictionary")
 
 
 class DictionaryFormatError(ValueError):
-    pass
+    """Exception raised if dictionary file violates specification."""
 
 
 class DictionaryEntry(ABC):
-    """An ABC used to represent an entry from a dictionary of an arbitrary format. 
+    """An ABC used to represent an entry from a dictionary of an arbitrary format.
 
     Abstract base class for all classes used to represent entries from dictionaries of
-    concrete type.  
+    concrete type.
 
-    Prompting an answer and checking if its correct already implemented 
+    Prompting an answer and checking if its correct already implemented
     here. Each subclass should implement all the following properties and methods.
 
     Properties
@@ -34,10 +38,10 @@ class DictionaryEntry(ABC):
         The 2nd language (language B below) of the dictionary.
     query_a : str
         The query to be showed when prompted to translate from language A to
-        language B.  
+        language B.
     query_b : str
         The query to be showed when prompted to translate from language B to
-        language A.  
+        language A.
     words_a : set[str]
         Set of options to be considered correct when prompted to translate from
         language B to language A.
@@ -54,7 +58,7 @@ class DictionaryEntry(ABC):
     @staticmethod
     def default_directory() -> str
         Returns a string representing the default directory dictionary of this
-        format are stored in. 
+        format are stored in.
 
     @classmethod
     def read_dictionary_from_file(cls, path: str) -> Dictionary
@@ -67,7 +71,7 @@ class DictionaryEntry(ABC):
         Parameters
         ----------
         a2b : bool
-            True, if translation should be prompted from language A to 
+            True, if translation should be prompted from language A to
             B language. False otherwise.
 
         Returns
@@ -76,9 +80,7 @@ class DictionaryEntry(ABC):
             The string typed in by the user.
         """
         query = self.query_a if a2b else self.query_b
-        prompter = PrompterInTheLanguage(
-            self.language_b if a2b else self.language_a
-        )
+        prompter = PrompterInTheLanguage(self.language_b if a2b else self.language_a)
         return prompter.prompt(f"{query} ⇨ ", additional_symbols=",-")
 
     def check_translation(self, a2b: bool, translation: str) -> bool:
@@ -87,7 +89,7 @@ class DictionaryEntry(ABC):
         Parameters
         ----------
         a2b : bool
-            True, if translation is given in the language B language A to 
+            True, if translation is given in the language B language A to
             B language, False otherwise.
         translation : str
             A string with translation, typically typed in by the user.
@@ -104,63 +106,74 @@ class DictionaryEntry(ABC):
         target = self.words_b if a2b else self.words_a
         return translation in target
 
-    @property
-    def languages(self) -> tuple[Language, Language]:
-        return (self.language_a, self.language_b)
+    def __lt__(self, other: DE) -> bool:
+        """Necessary to sort"""
+        return self.words_a < other.words_b
 
     @property
     @abstractmethod
     def language_a(self) -> Language:
-        pass
+        """First language of the entry."""
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def language_b(self) -> Language:
-        pass
+        """Second language of the entry."""
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def query_a(self) -> str:
-        pass
+        """Query to show when prompting translation to language A."""
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def query_b(self) -> str:
-        pass
+        """Query to show when prompting translation to language A."""
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def words_a(self) -> set[str]:
-        pass
+        """Values to be considered correct translation to language A."""
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def words_b(self) -> set[str]:
-        pass
+        """Values to be considered correct translation to language B."""
+        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
     def extension() -> str:
-        pass
+        """File extension associated with this type of entries."""
+        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
     def default_directory() -> str:
-        pass
+        """Directory name associated with this type of entries."""
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
-    def read_dictionary_from_file(cls: Type[DI], path: str) -> tuple[list[DI], Language, Language]:
-        pass
+    def read_dictionary_from_file(
+        cls: Type[DE], path: str
+    ) -> tuple[list[DE], Language, Language]:
+        """Read list entries of this type from a file."""
+        raise NotImplementedError
 
 
 @dataclass
-class Dictionary:
-    """A class used to represent a dictionary. 
+class Dictionary(Generic[DE]):
+    """A class used to represent a dictionary.
 
-    A dictionary is a list of homogeneous dictionary entries. Instances of the 
-    class are used in order to run translation sessions. Contains list of 
-    DictionaryEntry instances, and delegates iteration and indexation to the 
+    A dictionary is a list of homogeneous dictionary entries. Instances of the
+    class are used in order to run translation sessions. Contains list of
+    DictionaryEntry instances, and delegates iteration and indexation to the
     list.
 
     Attributes
@@ -182,17 +195,19 @@ class Dictionary:
         Prints the dictionary to stdout in a from of the table.
 
     def send_to_telegram(self) -> bool:
-        Send the dictionary to a telegram user via the bot.  
+        Send the dictionary to a telegram user via the bot.
     """
 
-    entries: list[DictionaryEntry]
+    entries: list[DE]
     language_a: Language
     language_b: Language
 
     @classmethod
-    def from_file(cls: D, path: str, T: Type[DictionaryEntry]) -> D:
+    def from_file(
+        cls: Type[D], path: str, type: Type[DE]
+    ) -> "Dictionary"[DE]:  # pylint: disable=invalid-sequence-index
         "Read dictionary form a file assuming the type T."
-        return cls(*T.read_dictionary_from_file(path))
+        return cls(*type.read_dictionary_from_file(path))
 
     def print(self, title: Optional[str] = None) -> None:
         "Print the dictionary to stdout in a from of the table."
@@ -215,30 +230,22 @@ class Dictionary:
             A string representing a path to a configuration file.
         """
         self.sort()
-        rows = [
-            f"{item.query_a} — {item.query_b}" for item in self
-        ]
+        rows = [f"{item.query_a} — {item.query_b}" for item in self]
         text = "\n".join(rows)
         try:
             config = APIConfiguration.read_ini(path)
-            status = send_to_telegram(
-                config.url,
-                config.user_id,
-                config.token,
-                text
-            )
+            status = send_to_telegram(config.url, config.user_id, config.token, text)
         except TelegramError as exception:
             exception_type = type(exception).__name__
             print(f"[red]{exception_type}[/red]: [yellow]{exception}[/yellow]")
             return False
-        else:
-            return status
+        return status
 
     def sort(self) -> None:
         "Sort the dictionary with respect to the language A."
         self.entries.sort(key=lambda item: item.query_a)
 
-    def insert(self, entry: DictionaryEntry) -> None:
+    def insert(self, entry: DE) -> None:
         "Insert a new entry."
         self.entries.append(entry)
 
@@ -246,11 +253,11 @@ class Dictionary:
         "Shuffle entries."
         shuffle(self.entries)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[DE]:
         return iter(self.entries)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.entries)
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int) -> DE:
         return self.entries[index]

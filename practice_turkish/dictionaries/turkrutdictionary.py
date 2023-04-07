@@ -10,9 +10,23 @@ T = TypeVar("T", bound="TurkrutDictionaryEntry")
 
 
 def extract_words_and_hint(s: str) -> tuple[set[str], str]:
+    """Extracts words and hint for one language
+
+    Parameters
+    ----------
+    s : str
+        A part of a turkrut dictionary line to one side of the middle dash.
+
+    Returns
+    ----------
+    words : list[str]
+        Values to be considered correct translation to the language.
+    hint: str
+        Hint for translation to the language.
+    """
     hint = inside_parenthesis(s)
-    words = s.replace(f"({hint})", "").strip()
-    words = set(words.split(", "))
+    words_part = s.replace(f"({hint})", "").strip()
+    words = set(words_part.split(", "))
     return words, hint
 
 
@@ -20,7 +34,7 @@ def extract_words_and_hint(s: str) -> tuple[set[str], str]:
 class TurkrutDictionaryEntry(DictionaryEntry):
     """A class used to represent a dictionary entry from turkrut.ru.
 
-    The structure: 
+    The structure:
     Turkish (hint) - Russian (hint)\n
     Caveats:
     1) The separator could be a dash of various length.
@@ -69,6 +83,18 @@ class TurkrutDictionaryEntry(DictionaryEntry):
 
     @classmethod
     def from_line(cls: Type[T], line: str) -> T:
+        """Factory class method parsing a line of a turkrut dictionary file.
+
+        Parameters
+        ----------
+        line : str
+            A line of a turkrut dictionary file.
+
+        Returns
+        ----------
+        item : TurkrutDictionaryItem
+            An entry representing the line
+        """
         tk, ru = re.split("-|—|–", line)
         tk, ru = tk.strip(), ru.strip()
         tk_words, tk_hint = extract_words_and_hint(tk)
@@ -76,6 +102,12 @@ class TurkrutDictionaryEntry(DictionaryEntry):
         return cls(tk, ru, tk_words, ru_words, tk_hint, ru_hint)
 
     @classmethod
-    def read_dictionary_from_file(cls: Type[T], path: str) -> tuple[list[T], Language, Language]:
+    def read_dictionary_from_file(
+        cls: Type[T], path: str
+    ) -> tuple[list[T], Language, Language]:
         with open(path, encoding="utf-8") as f:
-            return [cls.from_line(line) for line in f], Language.turkish, Language.russian
+            return (
+                [cls.from_line(line) for line in f],
+                Language.turkish,
+                Language.russian,
+            )
