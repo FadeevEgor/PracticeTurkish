@@ -18,6 +18,7 @@ jobs:
       uses: snok/install-poetry@v1
     - name: Build a binary wheel and a source tarball
       run: >-
+        poetry install
         poetry build
 
     - name: Publish distribution 📦 to Test PyPI
