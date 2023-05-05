@@ -106,7 +106,7 @@ def send_to_telegram(
     response = requests.post(
         url=url,
         data=json.dumps({"user id": user_id, "token": token, "text": text}),
-        timeout=10,
+        timeout=30,
     )
     if response.status_code == 403:
         raise AuthenticationError(

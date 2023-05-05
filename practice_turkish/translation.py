@@ -9,12 +9,10 @@ from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
 from practice_turkish.languages import prompt_way_of_translation
-from practice_turkish.filepath import prompt_filepath
+from practice_turkish.filepath import prompt_filepath, prompt_dictionary_type
 from practice_turkish.dictionaries import (
     Dictionary,
     DictionaryEntry,
-    CSVDictionaryEntry,
-    TurkrutDictionaryEntry,
 )
 
 
@@ -31,25 +29,6 @@ class AnswerType(str, Enum):
 
     TYPING = "TYPING"
     CHOICE = "CHOICE"
-
-
-def prompt_dictionary_type() -> Type[DictionaryEntry]:
-    """Prompt a type of a dictionary from the user.
-
-    Request the user to pick a type of a supported dictionary.
-    This type later is used in order to parse the content of the file.
-
-    Returns
-    ----------
-    T : A subclass of DictionaryItem class
-    """
-    return inquirer.select(
-        message="What is the format of the file?",
-        choices=[
-            Choice(value=TurkrutDictionaryEntry, name="turkrut.ru"),
-            Choice(value=CSVDictionaryEntry, name="csv"),
-        ],
-    ).execute()
 
 
 def prompt_shuffle() -> bool:
@@ -75,7 +54,8 @@ def prompt_answer_type() -> AnswerType:
         message="How would you prefer to answer?",
         choices=[
             Choice(value=AnswerType.TYPING, name="Type it in"),
-            Choice(value=AnswerType.CHOICE, name="Choose from multiple options"),
+            Choice(value=AnswerType.CHOICE,
+                   name="Choose from multiple options"),
         ],
     ).execute()
 
@@ -140,7 +120,8 @@ def answer_with_choice(
     """
     query = the_entry.query_a if a2b else the_entry.query_b
     incorrect_options = random.sample(dictionary.entries, k=n_choices)
-    incorrect_options = [entry for entry in incorrect_options if entry is not the_entry]
+    incorrect_options = [
+        entry for entry in incorrect_options if entry is not the_entry]
     options = [the_entry] + incorrect_options[: n_choices - 1]
     random.shuffle(options)
     choices = [
@@ -155,7 +136,8 @@ def answer_with_choice(
         print("[green]Correct![/green]")
         return True
     correct_answer = the_entry.query_b if a2b else the_entry.query_a
-    print(f"[red]Incorrect![/red] Correct option was '[green]{correct_answer}[/green]'")
+    print(
+        f"[red]Incorrect![/red] Correct option was '[green]{correct_answer}[/green]'")
     return False
 
 
@@ -187,7 +169,8 @@ def prepare_session() -> (
     if prompt_shuffle():
         dictionary.shuffle()
 
-    a2b = prompt_way_of_translation(dictionary.language_a, dictionary.language_b)
+    a2b = prompt_way_of_translation(
+        dictionary.language_a, dictionary.language_b)
     match prompt_answer_type():
         case AnswerType.TYPING:
             answer_function = partial(answer_with_prompt, a2b=a2b)

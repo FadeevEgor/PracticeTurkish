@@ -1,12 +1,19 @@
 import os
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Generator, Optional, Type
 
 from prompt_toolkit.document import Document
 from prompt_toolkit.completion import Completion, CompleteEvent
 from InquirerPy import inquirer
 from InquirerPy.prompts.filepath import FilePathCompleter
 from InquirerPy.validator import PathValidator
+from InquirerPy.base.control import Choice
+
+from practice_turkish.dictionaries import (
+    DictionaryEntry,
+    CSVDictionaryEntry,
+    TurkrutDictionaryEntry,
+)
 
 
 class ExtensionFilePathCompleter(FilePathCompleter):
@@ -87,6 +94,25 @@ def prompt_filepath(
         default=str(path.absolute()) + os.path.sep,
         completer=completer,
         validate=validator,
+    ).execute()
+
+
+def prompt_dictionary_type() -> Type[DictionaryEntry]:
+    """Prompt a type of a dictionary from the user.
+
+    Request the user to pick a type of a supported dictionary.
+    This type later is used in order to parse the content of the file.
+
+    Returns
+    ----------
+    T : A subclass of DictionaryItem class
+    """
+    return inquirer.select(
+        message="What is the format of the file?",
+        choices=[
+            Choice(value=TurkrutDictionaryEntry, name="turkrut.ru"),
+            Choice(value=CSVDictionaryEntry, name="csv"),
+        ],
     ).execute()
 
 

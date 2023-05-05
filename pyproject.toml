@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "practice_turkish"
-version = "1.4.0"
+version = "1.4.1"
 description = "A set of tools to practice your Turkish"
 authors = ["Egor Fadeev <fadeevegor@yandex.ru>"]
 readme = "README.md"
@@ -21,6 +21,8 @@ practice_turkish = "practice_turkish.practice:main"
 translate = "practice_turkish.translation:main"
 numbers = "practice_turkish.number:main"
 new_dictionary = "practice_turkish.make_csv:main"
+to_telegram = "practice_turkish.to_telegram:main"
+
 
 [tool.pylint.message_control]
 disable = [
